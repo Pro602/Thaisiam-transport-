@@ -1,134 +1,354 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ตารางสินค้า - เลือกตามหมวดหมู่</title>
+    <title>ระบบติดตามสถานะขนส่ง</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background: linear-gradient(120deg, #a8edea, #fed6e3);
             text-align: center;
-            background: #f4f4f4;
-        }
-        h2 {
-            color: #333;
-        }
-        select {
-            padding: 10px;
-            margin: 10px;
-            font-size: 16px;
-            border-radius: 5px;
-        }
-        .table-container {
-            width: 90%;
-            margin: auto;
-            overflow-x: auto; /* ทำให้ตารางเลื่อนได้ */
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            text-align: left; /* ชิดซ้าย */
-        }
-        th {
-            background: #007BFF;
-            color: white;
-        }
-        tr:nth-child(even) {
-            background: #f9f9f9;
+            margin: 0;
+            padding: 20px;
         }
         
-        /* ทำให้รองรับมือถือ */
-        @media screen and (max-width: 600px) {
-            table {
-                font-size: 14px;
-            }
-            select {
-                width: 100%;
-            }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        h2 {
+            color: #007BFF;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        
+        .truck {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f4f4f4;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+        
+        .status {
+            font-weight: bold;
+        }
+        
+        .pending {
+            color: gray;
+        }
+        
+        .in-progress {
+            color: orange;
+        }
+        
+        .completed {
+            color: green;
+        }
+        
+        button {
+            padding: 8px 15px;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        .start-btn {
+            background: blue;
+            color: white;
+        }
+        
+        .complete-btn {
+            background: green;
+            color: white;
+            display: none;
+        }
+        
+        .timestamp.shipping {
+            color: orange;
+            /* สีส้มสำหรับสถานะกำลังจัดส่ง */
+        }
+        
+        .timestamp.delivered {
+            color: green;
+            /* สีเขียวสำหรับสถานะจัดส่งแล้ว */
         }
     </style>
 </head>
+
 <body>
 
-    <h2 style="font-size: 28px; color: #007BFF; font-weight: bold;">STOCK ON HAND</h2>
+    <h2>🚚 ระบบติดตามสถานะขนส่ง</h2>
 
-    <div style="display: flex; flex-direction: column; align-items: start; padding-left: 5%;">
-        <label for="categorySelect" style="font-size: 16px; font-weight: bold; color: #333;">เลือกหมวดหมู่สินค้า</label>
-        <select id="categorySelect">
-            <option value="">-- เลือกหมวดหมู่ --</option>
-        </select>
+    <div id="loginContainer">
+        <label>ล็อกอินเข้าใช้งาน (ใช้ 4 ตัวท้ายของทะเบียนรถ):</label>
+        <input type="password" id="passwordInput" placeholder="รหัสผ่าน">
+        <button onclick="login()">เข้าสู่ระบบ</button>
     </div>
 
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>รหัสสินค้า</th>
-                    <th>ชื่อสินค้า</th>
-                    <th>จำนวน</th>
-                </tr>
-            </thead>
-            <tbody id="productTable">
-                <!-- ข้อมูลจะแสดงที่นี่ -->
-            </tbody>
-        </table>
+    <div class="container">
+        <div id="truckData"></div>
     </div>
-
-
 
     <script>
-        const sheetID = "1l1exJIhymKc3MaaYwnV6UKWP39Na3t_Y_ZYNvAW0FKY";
-        const sheetName = "Stock"; 
-        const apiUrl = `https://opensheet.elk.sh/${sheetID}/${sheetName}`;
+        const API_URL = "https://script.google.com/macros/s/AKfycbxRojPjjz6nRkEG9bcubeXk6a8wtaDFsSpNL0DFcIVGc3vg7EyrNMu-rVEZJ-4Ashc-/exec";
+        let loggedInTruck = null;
+        let truckData = [];
 
-        let dataStore = []; // เก็บข้อมูลจาก API
+        // เรียก fetchData เพื่อโหลดข้อมูลทั้งหมดก่อน
+        fetchData();
 
-        function loadSheetData() {
-            fetch(apiUrl)
+        function login() {
+            const password = document.getElementById("passwordInput").value;
+
+            if (!password) {
+                Swal.fire({
+                    title: "กรุณากรอกรหัสผ่าน",
+                    icon: "warning",
+                    text: "กรุณากรอกรหัสผ่านก่อนเข้าสู่ระบบ",
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+                return;
+            }
+
+            // ค้นหาใน truckData ว่ามี license_plate ที่ลงท้ายด้วยค่าที่กรอกมาหรือไม่
+            const foundTruck = truckData.find(truck => {
+            // เช็คความยาวของ license_plate ก่อน
+            let lastFour = null;
+            if (truck.license_plate.length === 9) {
+                // ถ้ามี 9 ตัว -> ตัด 2 ตัวท้าย แล้วเอา 4 ตัวหลัง
+                lastFour = truck.license_plate.slice(0, -2).slice(-4);
+            } else if (truck.license_plate.length === 8) {
+                // ถ้ามี 8 ตัว -> ตัด 2 ตัวท้าย แล้วเอา 4 ตัวหลัง
+                lastFour = truck.license_plate.slice(0, -2).slice(-4);
+            }
+
+            // เปรียบเทียบกับ password
+            return lastFour === password;
+        });
+
+            if (!foundTruck) {
+                Swal.fire({
+                    title: "รหัสผ่านไม่ถูกต้อง",
+                    icon: "error",
+                    text: "ทะเบียนรถนี้ไม่มีอยู่ในระบบ กรุณาลองใหม่",
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+                return;
+            }
+
+            loggedInTruck = password;
+            Swal.fire({
+                title: "เข้าสู่ระบบสำเร็จ",
+                icon: "success",
+                text: `คุณเข้าสู่ระบบด้วยทะเบียนรถ: ${foundTruck.license_plate}`,
+                timer: 3000, // ปิดอัตโนมัติใน 3 วินาที
+                showConfirmButton: false // ไม่แสดงปุ่ม OK
+            });
+
+            renderTrucks(); // โหลดข้อมูลที่กรองตามทะเบียนรถหลังจากล็อกอินสำเร็จ
+        }
+
+        function fetchData() {
+            fetch(API_URL)
                 .then(response => response.json())
                 .then(data => {
-                    console.log("📌 ข้อมูลที่ได้จาก API:", data);
-                    dataStore = data; // บันทึกข้อมูลไว้ใช้ต่อ
+                    // กรองข้อมูลที่ไม่ใช่หัวตาราง (row ที่มี date เป็น "วันที่")
+                    truckData = data.filter(row => row.date !== "วันที่");
 
-                    const categorySelect = document.getElementById("categorySelect");
-                    categorySelect.innerHTML = `<option value="">-- เลือกหมวดหมู่ --</option>`; // ล้างค่าเก่าก่อน
-                    const categories = [...new Set(data.map(row => row["Category"]))]; // หาหมวดหมู่ที่ไม่ซ้ำกัน
-                    
-                    categories.forEach(category => {
-                        let option = document.createElement("option");
-                        option.value = category;
-                        option.textContent = category;
-                        categorySelect.appendChild(option);
-                    });
+                    // กรองข้อมูลเฉพาะวันที่ปัจจุบัน
+                    truckData = truckData.filter(item => isToday(item.date));
 
-                    categorySelect.addEventListener("change", filterByCategory);
+                    renderTrucks(); // แสดงข้อมูลที่กรองแล้ว
                 })
-                .catch(error => console.error("🚨 โหลดข้อมูลไม่ได้:", error));
+                .catch(error => console.error("Error fetching data:", error));
         }
 
-        function filterByCategory() {
-            const selectedCategory = document.getElementById("categorySelect").value;
-            const tableBody = document.getElementById("productTable");
-            tableBody.innerHTML = ""; // ล้างข้อมูลก่อนแสดงผลใหม่
+        // ฟังก์ชันตรวจสอบว่าวันที่ตรงกับวันปัจจุบันหรือไม่
+        function isToday(dateString) {
+            if (!dateString) return false;
 
-            const filteredData = dataStore.filter(row => row["Category"] === selectedCategory);
-            
-            filteredData.forEach(row => {
-                let tableRow = `<tr>
-                    <td>${row["prodcode"]}</td>
-                    <td>${row["prodname"]}</td>
-                    <td>${row["qty"]}</td>
-                </tr>`;
-                tableBody.innerHTML += tableRow;
+            // แปลงวันที่จาก API เป็นรูปแบบ Date
+            const dateFromAPI = new Date(dateString);
+            const today = new Date();
+
+            // เปรียบเทียบวัน เดือน และปี
+            return (
+                dateFromAPI.getDate() === today.getDate() &&
+                dateFromAPI.getMonth() === today.getMonth() &&
+                dateFromAPI.getFullYear() === today.getFullYear()
+            );
+        }
+
+        function updateStatus(id, newStatus) {
+            if (!id) {
+                console.error("❌ ไม่พบ ID สำหรับอัปเดตสถานะ");
+                return;
+            }
+
+            Swal.fire({
+                title: "กำลังอัปเดต...",
+                text: "รอสักครู่ กำลังอัปเดตสถานะ",
+                icon: "info",
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                timer: 3000
             });
+
+            const url = `${API_URL}?id=${id}&status=${encodeURIComponent(newStatus)}`;
+
+            setTimeout(() => {
+                fetch(url, {
+                        method: "GET"
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        Swal.fire({
+                            title: "สำเร็จ!",
+                            text: "อัปเดตสถานะเรียบร้อยแล้ว",
+                            icon: "success",
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        fetchData();
+                    })
+                    .catch(error => {
+                        console.error("❌ อัปเดตสถานะผิดพลาด:", error);
+                        Swal.fire({
+                            title: "ผิดพลาด!",
+                            text: "ไม่สามารถอัปเดตสถานะได้",
+                            icon: "error"
+                        });
+                    });
+            }, 1500);
         }
+
+        function renderTrucks() {
+            const container = document.getElementById("truckData");
+            container.innerHTML = "";
+
+            const groupedByTruck = {};
+
+            truckData.forEach(item => {
+            // เช็คความยาวของ license_plate
+            let lastFour = null;
+            if (item.license_plate.length === 9) {
+                lastFour = item.license_plate.slice(0, -2).slice(-4);
+            } else if (item.license_plate.length === 8) {
+                lastFour = item.license_plate.slice(0, -2).slice(-4);
+            }
+            if (loggedInTruck && lastFour !== loggedInTruck) {
+                return; // ถ้าไม่ตรงกับทะเบียนรถที่ล็อกอิน ข้ามข้อมูลนี้ไป
+            }
+
+                const key = `${item.license_plate} - เที่ยวที่ ${item.trip}`;
+                if (!groupedByTruck[key]) groupedByTruck[key] = [];
+                groupedByTruck[key].push(item);
+            });
+
+            Object.keys(groupedByTruck).forEach(truck => {
+                        const truckDiv = document.createElement("div");
+                        truckDiv.classList.add("truck");
+
+                        truckDiv.innerHTML = `<h2>🚚 ${truck}</h2><ul></ul>`;
+                        const list = truckDiv.querySelector("ul");
+
+                        groupedByTruck[truck].forEach(item => {
+                                    const li = document.createElement("li");
+
+                                    // กำหนด timestamp และคลาสสีตามสถานะ
+                                    let timestamp = "";
+                                    let timestampClass = "";
+
+                                    if (item.status === "จัดส่งแล้ว") {
+                                        timestamp = `จัดส่งแล้ว ${formatDateTime(item.timestamp)}`;
+                                        timestampClass = "delivered";
+                                    } else if (item.status === "กำลังจัดส่ง") {
+                                        timestamp = `กำลังจัดส่ง ${formatDateTime(item.timestamp)}`;
+                                        timestampClass = "shipping";
+                                    } else {
+                                        timestamp = formatDateTime(item.timestamp);
+                                    }
+
+                                    li.innerHTML = `
+                <span class="status">${item.customer}</span>
+                <span class="timestamp ${timestampClass}">${timestamp}</span>
+                ${loggedInTruck ? ` 
+                    <button class="start-btn" onclick="updateStatus('${item.id}', 'กำลังจัดส่ง')">เริ่ม</button>
+                    <button class="complete-btn" onclick="updateStatus('${item.id}', 'จัดส่งแล้ว')">จัดส่งสำเร็จ</button>
+                ` : ""}
+            `;
+
+            const startBtn = li.querySelector(".start-btn");
+            const completeBtn = li.querySelector(".complete-btn");
+
+            if (startBtn) {
+                if (item.status === "กำลังจัดส่ง") {
+                    startBtn.style.display = "none";
+                } else if (item.status === "จัดส่งแล้ว") {
+                    startBtn.style.display = "none";
+                }
+            }
+
+            if (completeBtn) {
+                if (item.status === "กำลังจัดส่ง") {
+                    completeBtn.style.display = "inline-block";
+                } else if (item.status === "จัดส่งแล้ว") {
+                    completeBtn.style.display = "none";
+                }
+            }
+
+            list.appendChild(li);
+        });
+
+        container.appendChild(truckDiv);
+    });
+}
+
+
+        function formatDateTime(timestamp) {
+            if (!timestamp || isNaN(new Date(timestamp))) {
+                return "";  
+            }
+
+            const date = new Date(timestamp);  
+            const year = date.getFullYear();   
+            const month = String(date.getMonth() + 1).padStart(2, '0');  
+            const day = String(date.getDate()).padStart(2, '0');  
+
+            const hours = String(date.getHours()).padStart(2, '0');   
+            const minutes = String(date.getMinutes()).padStart(2, '0');  
+            const seconds = String(date.getSeconds()).padStart(2, '0');  
+
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;  
+        }
+
 
         // โหลดข้อมูลครั้งแรก
         loadSheetData();
