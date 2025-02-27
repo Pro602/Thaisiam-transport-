@@ -351,10 +351,11 @@
 
 
         // โหลดข้อมูลครั้งแรก
-        loadSheetData();
+    fetchData();
 
-        // อัปเดตข้อมูลอัตโนมัติทุก 30 วินาที
-        setInterval(loadSheetData, 30000);
+    // อัปเดตข้อมูลอัตโนมัติทุก 15 วินาที
+    setInterval(fetchData, 15000);
+
     </script>
 
 </body>
