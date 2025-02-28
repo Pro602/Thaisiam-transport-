@@ -91,18 +91,112 @@
         .timestamp.shipping {
             color: orange;
             /* สีส้มสำหรับสถานะกำลังจัดส่ง */
+            position: relative;
+            white-space: nowrap;
+            animation: marquee 5s linear infinite;
+        }
+        
+        @keyframes marquee {
+            from {
+                transform: translateX(10%);
+            }
+            to {
+                transform: translateX(-100%);
+            }
         }
         
         .timestamp.delivered {
             color: green;
             /* สีเขียวสำหรับสถานะจัดส่งแล้ว */
         }
+        
+        .key-box {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: #a0e9ff;
+            background: -webkit-linear-gradient(0deg, #a0e9ff 0%, #a8f0ff 50%, #c6f5ff 100%);
+            background: linear-gradient(0deg, #a0e9ff 0%, #a8f0ff 50%, #c6f5ff 100%);
+            background-color: #fff5e6;
+            color: #ff9800;
+            font-weight: bold;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff9800;
+            /* สีส้ม */
+            padding: 10px;
+            border-radius: 10px;
+            background: linear-gradient(to right, #ffcc80, #ff9800);
+            color: white;
+            display: inline-block;
+            padding: 10px 20px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        #loginContainer {
+            text-align: center;
+            margin: 20px auto;
+            padding: 20px;
+            width: 300px;
+            background: #fff5e6;
+            border-radius: 10px;
+            border: 2px solid #ff9800;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        #passwordInput {
+            width: 80%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ff9800;
+            border-radius: 5px;
+        }
+        
+        button {
+            background: #ff9800;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        button:hover {
+            background: #e68900;
+        }
+        
+        .truck-header {
+            display: flex;
+            align-items: center;
+            /* จัดให้อยู่กึ่งกลางแนวตั้ง */
+            justify-content: center;
+            /* จัดให้อยู่กึ่งกลางแนวนอน */
+            gap: 10px;
+            /* ระยะห่างระหว่างไอคอนกับข้อความ */
+        }
+        
+        .truck-header .fa-bounce {
+            display: inline-block;
+        }
+        
+        .driver-name {
+            font-weight: bold;
+            color: #007bff;
+            /* สีฟ้าสำหรับเน้นชื่อ */
+            margin-right: 10px;
+            /* เพิ่มระยะห่างระหว่างชื่อกับชื่อรถ */
+        }
     </style>
 </head>
 
 <body>
 
-    <h2>🚚 ระบบติดตามสถานะขนส่ง</h2>
+    <h1>🚚 ระบบติดตามสถานะขนส่ง</h1>
 
     <div id="loginContainer">
         <label>กรุณาล็อกอินเข้าใช้งาน (เพื่อUpdate Status):</label>
@@ -138,19 +232,19 @@
 
             // ค้นหาใน truckData ว่ามี license_plate ที่ลงท้ายด้วยค่าที่กรอกมาหรือไม่
             const foundTruck = truckData.find(truck => {
-            // เช็คความยาวของ license_plate ก่อน
-            let lastFour = null;
-            if (truck.license_plate.length === 9) {
-                // ถ้ามี 9 ตัว -> ตัด 2 ตัวท้าย แล้วเอา 4 ตัวหลัง
-                lastFour = truck.license_plate.slice(0, -2).slice(-4);
-            } else if (truck.license_plate.length === 8) {
-                // ถ้ามี 8 ตัว -> ตัด 2 ตัวท้าย แล้วเอา 4 ตัวหลัง
-                lastFour = truck.license_plate.slice(0, -2).slice(-4);
-            }
+                // เช็คความยาวของ license_plate ก่อน
+                let lastFour = null;
+                if (truck.license_plate.length === 9) {
+                    // ถ้ามี 9 ตัว -> ตัด 2 ตัวท้าย แล้วเอา 4 ตัวหลัง
+                    lastFour = truck.license_plate.slice(0, -2).slice(-4);
+                } else if (truck.license_plate.length === 8) {
+                    // ถ้ามี 8 ตัว -> ตัด 2 ตัวท้าย แล้วเอา 4 ตัวหลัง
+                    lastFour = truck.license_plate.slice(0, -2).slice(-4);
+                }
 
-            // เปรียบเทียบกับ password
-            return lastFour === password;
-        });
+                // เปรียบเทียบกับ password
+                return lastFour === password;
+            });
 
             if (!foundTruck) {
                 Swal.fire({
@@ -256,18 +350,19 @@
             const groupedByTruck = {};
 
             truckData.forEach(item => {
-            // เช็คความยาวของ license_plate
-            let lastFour = null;
-            if (item.license_plate.length === 9) {
-                lastFour = item.license_plate.slice(0, -2).slice(-4);
-            } else if (item.license_plate.length === 8) {
-                lastFour = item.license_plate.slice(0, -2).slice(-4);
-            }
-            if (loggedInTruck && lastFour !== loggedInTruck) {
-                return; // ถ้าไม่ตรงกับทะเบียนรถที่ล็อกอิน ข้ามข้อมูลนี้ไป
-            }
+                // เช็คความยาวของ license_plate
+                let lastFour = null;
+                if (item.license_plate.length === 9) {
+                    lastFour = item.license_plate.slice(0, -2).slice(-4);
+                } else if (item.license_plate.length === 8) {
+                    lastFour = item.license_plate.slice(0, -2).slice(-4);
+                }
+                if (loggedInTruck && lastFour !== loggedInTruck) {
+                    return; // ถ้าไม่ตรงกับทะเบียนรถที่ล็อกอิน ข้ามข้อมูลนี้ไป
+                }
 
-                const key = `${item.license_plate} - เที่ยวที่ ${item.trip}`;
+                const key = `<span class="key-box">${item.license_plate} - เที่ยวที่ ${item.trip}</span>`;
+
                 if (!groupedByTruck[key]) groupedByTruck[key] = [];
                 groupedByTruck[key].push(item);
             });
@@ -276,7 +371,12 @@
                         const truckDiv = document.createElement("div");
                         truckDiv.classList.add("truck");
 
-                        truckDiv.innerHTML = `<h2>🚚 ${truck}</h2><ul></ul>`;
+                        // ดึงข้อมูล diver ของรถแต่ละคัน
+                        const firstItem = groupedByTruck[truck][0];
+                        const diver = firstItem && firstItem.driver ? `<span class="driver-name">ชื่อผู้ขับ: ${firstItem.driver}</span>` : '';
+
+                        truckDiv.innerHTML = `<h2 class="truck-header"><p class="fa-bounce">🚚</p> ${diver} ${truck}</h2><ul></ul>`;
+
                         const list = truckDiv.querySelector("ul");
 
                         groupedByTruck[truck].forEach(item => {
@@ -290,7 +390,7 @@
                                         timestamp = `จัดส่งแล้ว ${formatDateTime(item.timestamp)}`;
                                         timestampClass = "delivered";
                                     } else if (item.status === "กำลังจัดส่ง") {
-                                        timestamp = `กำลังจัดส่ง ${formatDateTime(item.timestamp)}`;
+                                        timestamp = `🚚กำลังจัดส่ง ${formatDateTime(item.timestamp)}`;
                                         timestampClass = "shipping";
                                     } else {
                                         timestamp = formatDateTime(item.timestamp);
@@ -332,6 +432,7 @@
 }
 
 
+
         function formatDateTime(timestamp) {
             if (!timestamp || isNaN(new Date(timestamp))) {
                 return "";  
@@ -355,8 +456,8 @@
 
     // อัปเดตข้อมูลอัตโนมัติทุก 15 วินาที
     setInterval(fetchData, 15000);
-
     </script>
 
 </body>
+
 </html>
