@@ -109,6 +109,17 @@
             color: green;
             /* สีเขียวสำหรับสถานะจัดส่งแล้ว */
         }
+@keyframes blink {
+    0% { opacity: 1; }   /* เริ่มต้นโปร่งใสเต็ม */
+    50% { opacity: 0; }  /* กลางทางทำให้โปร่งใส */
+    100% { opacity: 1; } /* กลับมาแสดง */
+}
+
+.blink-text {
+    animation: blink 1s infinite; /* ทำให้ข้อความกระพริบทุก 1 วินาที */
+    font-weight: bold; 
+}
+
         
         .key-box {
             display: inline-block;
@@ -191,6 +202,10 @@
             margin-right: 10px;
             /* เพิ่มระยะห่างระหว่างชื่อกับชื่อรถ */
         }
+document.addEventListener("DOMContentLoaded", () => {
+    fetchData();
+});
+
     </style>
 </head>
 
@@ -269,20 +284,38 @@
             renderTrucks(); // โหลดข้อมูลที่กรองตามทะเบียนรถหลังจากล็อกอินสำเร็จ
         }
 
-        function fetchData() {
-            fetch(API_URL)
-                .then(response => response.json())
-                .then(data => {
-                    // กรองข้อมูลที่ไม่ใช่หัวตาราง (row ที่มี date เป็น "วันที่")
-                    truckData = data.filter(row => row.date !== "วันที่");
+function fetchData() {
+    console.log("Fetching data..."); // Debug ตรวจสอบว่าทำงานหรือไม่
+    fetch(API_URL)
+        .then(response => response.json())
+        .then(data => {
+            console.log("Data fetched:", data); // Debug ตรวจสอบข้อมูลที่ดึงมา
 
-                    // กรองข้อมูลเฉพาะวันที่ปัจจุบัน
-                    truckData = truckData.filter(item => isToday(item.date));
+            // กรองข้อมูลที่ไม่ใช่หัวตาราง (ตัดแถวหัวข้อออก)
+            truckData = data.filter(row => row.date !== "วันที่");
 
-                    renderTrucks(); // แสดงข้อมูลที่กรองแล้ว
-                })
-                .catch(error => console.error("Error fetching data:", error));
-        }
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // ตัดเวลาทิ้งเพื่อเทียบเฉพาะวันที่
+
+            truckData = truckData.filter(item => {
+                if (!item.date) return false; // ไม่มีวันที่ ตัดออกเลย
+
+                const itemDate = new Date(item.date);
+                itemDate.setHours(0, 0, 0, 0); // ตัดเวลาทิ้งเช่นกัน
+
+                const isToday = itemDate.getTime() === today.getTime(); // เป็นวันนี้
+                const isFuture = itemDate.getTime() > today.getTime();  // เป็นวันถัดไป (อนาคต)
+                const isPast = itemDate.getTime() < today.getTime();    // เป็นวันเก่า
+
+                const isNotDelivered = item.status !== "จัดส่งแล้ว"; // วันเก่าที่ยังไม่ได้จัดส่ง
+                return isToday || isFuture || (isPast && isNotDelivered);
+            });
+
+            console.log("Filtered data:", truckData); // Debug เช็คว่าข้อมูลที่เหลืออยู่ตรงเงื่อนไขไหม
+            renderTrucks(); // ✅ เรียก renderTrucks() ให้แน่ใจว่าแสดงผลข้อมูล
+        })
+        .catch(error => console.error("❌ Error fetching data:", error));
+}
 
         // ฟังก์ชันตรวจสอบว่าวันที่ตรงกับวันปัจจุบันหรือไม่
         function isToday(dateString) {
@@ -343,63 +376,77 @@
             }, 1500);
         }
 
-        function renderTrucks() {
-            const container = document.getElementById("truckData");
-            container.innerHTML = "";
+function renderTrucks() {
+    const container = document.getElementById("truckData");
+    container.innerHTML = "";
 
-            const groupedByTruck = {};
+    const groupedByTruck = {};
 
-            truckData.forEach(item => {
-                // เช็คความยาวของ license_plate
-                let lastFour = null;
-                if (item.license_plate.length === 9) {
-                    lastFour = item.license_plate.slice(0, -2).slice(-4);
-                } else if (item.license_plate.length === 8) {
-                    lastFour = item.license_plate.slice(0, -2).slice(-4);
+    truckData.forEach(item => {
+        // เช็คทะเบียนรถ
+        let lastFour = item.license_plate.length >= 4 ? item.license_plate.slice(-6, -2) : null;
+
+        // ✅ แสดงทุกคันเสมอ แม้ยังไม่ได้ล็อกอิน
+        if (loggedInTruck && lastFour !== loggedInTruck) {
+            return; // 🚫 หากล็อกอินอยู่ แต่ไม่ตรงทะเบียนที่ล็อกอิน ให้ข้าม
+        }
+
+        const key = `<span class="key-box">${item.license_plate} - เที่ยวที่ ${item.trip}</span>`;
+
+        if (!groupedByTruck[key]) groupedByTruck[key] = [];
+        groupedByTruck[key].push(item);
+    });
+
+    Object.keys(groupedByTruck).forEach(truck => {
+        const truckDiv = document.createElement("div");
+        truckDiv.classList.add("truck");
+
+        const firstItem = groupedByTruck[truck][0];
+        const diver = firstItem && firstItem.driver ? `<span class="driver-name">ชื่อผู้ขับ: ${firstItem.driver}</span>` : '';
+
+        truckDiv.innerHTML = `<h2 class="truck-header"><p class="fa-bounce">🚚</p> ${diver} ${truck}</h2><ul></ul>`;
+
+        const list = truckDiv.querySelector("ul");
+
+        groupedByTruck[truck].forEach(item => {
+            const li = document.createElement("li");
+
+            let timestamp = item.timestamp ? formatDateTime(item.timestamp) : "";
+            const timestampClass = item.status === "จัดส่งแล้ว" ? "delivered" : item.status === "กำลังจัดส่ง" ? "shipping" : "";
+
+            if (item.status === "กำลังจัดส่ง") {
+                timestamp = `<span style="color:orange; font-weight:bold;">
+                    🚚 กำลังจัดส่ง ${formatDateTime(item.timestamp)}
+                 </span>`;
                 }
-                if (loggedInTruck && lastFour !== loggedInTruck) {
-                    return; // ถ้าไม่ตรงกับทะเบียนรถที่ล็อกอิน ข้ามข้อมูลนี้ไป
-                }
 
-                const key = `<span class="key-box">${item.license_plate} - เที่ยวที่ ${item.trip}</span>`;
+            let customerDisplay = item.customer;
 
-                if (!groupedByTruck[key]) groupedByTruck[key] = [];
-                groupedByTruck[key].push(item);
-            });
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const itemDate = new Date(item.date);
+            itemDate.setHours(0, 0, 0, 0);
+            const isFuture = itemDate.getTime() > today.getTime();
+	    const isPast = itemDate.getTime() < today.getTime(); 
 
-            Object.keys(groupedByTruck).forEach(truck => {
-                        const truckDiv = document.createElement("div");
-                        truckDiv.classList.add("truck");
+if (isFuture) {
+    const futureDate = itemDate.toLocaleDateString("th-TH", {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
 
-                        // ดึงข้อมูล diver ของรถแต่ละคัน
-                        const firstItem = groupedByTruck[truck][0];
-                        const diver = firstItem && firstItem.driver ? `<span class="driver-name">ชื่อผู้ขับ: ${firstItem.driver}</span>` : '';
+   customerDisplay += ` <span class="blink-text" style="color:green;"> คิวจัดส่งในวันที่ ${futureDate}</span>`;
+} else if (isPast && item.status !== "จัดส่งแล้ว") {
+    // ✅ เพิ่มข้อความ "จัดส่งล่าช้า" ถ้าเป็นอดีตและยังไม่จัดส่งสำเร็จ
+    customerDisplay += ` <span style="color:red;"> งานค้างส่ง </span>`;
+}
 
-                        truckDiv.innerHTML = `<h2 class="truck-header"><p class="fa-bounce">🚚</p> ${diver} ${truck}</h2><ul></ul>`;
-
-                        const list = truckDiv.querySelector("ul");
-
-                        groupedByTruck[truck].forEach(item => {
-                                    const li = document.createElement("li");
-
-                                    // กำหนด timestamp และคลาสสีตามสถานะ
-                                    let timestamp = "";
-                                    let timestampClass = "";
-
-                                    if (item.status === "จัดส่งแล้ว") {
-                                        timestamp = `จัดส่งแล้ว ${formatDateTime(item.timestamp)}`;
-                                        timestampClass = "delivered";
-                                    } else if (item.status === "กำลังจัดส่ง") {
-                                        timestamp = `🚚กำลังจัดส่ง ${formatDateTime(item.timestamp)}`;
-                                        timestampClass = "shipping";
-                                    } else {
-                                        timestamp = formatDateTime(item.timestamp);
-                                    }
-
-                                    li.innerHTML = `
-                <span class="status">${item.customer}</span>
+ 
+            li.innerHTML = `
+                <span class="status">${customerDisplay}</span>
                 <span class="timestamp ${timestampClass}">${timestamp}</span>
-                ${loggedInTruck ? ` 
+                ${loggedInTruck ? `
                     <button class="start-btn" onclick="updateStatus('${item.id}', 'กำลังจัดส่ง')">เริ่ม</button>
                     <button class="complete-btn" onclick="updateStatus('${item.id}', 'จัดส่งแล้ว')">จัดส่งสำเร็จ</button>
                 ` : ""}
@@ -407,6 +454,7 @@
 
             const startBtn = li.querySelector(".start-btn");
             const completeBtn = li.querySelector(".complete-btn");
+            
 
             if (startBtn) {
                 if (item.status === "กำลังจัดส่ง") {
@@ -435,7 +483,7 @@
 
         function formatDateTime(timestamp) {
             if (!timestamp || isNaN(new Date(timestamp))) {
-                return "";  
+                return "";
             }
 
             const date = new Date(timestamp);  
