@@ -2,526 +2,5415 @@
 <html lang="th">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบติดตามสถานะขนส่ง</title>
 
-    <!-- เชื่อมโยงกับ manifest.json -->
-    <link rel="manifest" href="/Thaisiam-transport-/manifest.json">
+<base target="_top">
 
-    <!-- เชื่อมโยงกับ favicon -->
-    <link rel="icon" href="favicon.ico?v=2">
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1"
+>
+
+<title>Delivery Control Center v3.0</title>
+<link rel="manifest" href="/Thaisiam-transport-/manifest.json">
+<link rel="icon" href="favicon.ico?v=3">
 
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(120deg, #a8edea, #fed6e3);
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1000px;
-            margin: auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        h2 {
-            color: #007BFF;
-            font-size: 22px;
-            font-weight: bold;
-        }
-        
-        .truck {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-        
-        li {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #f4f4f4;
-            padding: 10px;
-            margin-bottom: 5px;
-            border-radius: 5px;
-        }
-        
-        .status {
-            font-weight: bold;
-        }
-        
-        .pending {
-            color: gray;
-        }
-        
-        .in-progress {
-            color: orange;
-        }
-        
-        .completed {
-            color: green;
-        }
-        
-        button {
-            padding: 8px 15px;
-            font-size: 14px;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        
-        .start-btn {
-            background: blue;
-            color: white;
-        }
-        
-        .complete-btn {
-            background: green;
-            color: white;
-            display: none;
-        }
-        
-        .timestamp.shipping {
-            color: orange;
-            /* สีส้มสำหรับสถานะกำลังจัดส่ง */
-            position: relative;
-            white-space: nowrap;
-            animation: marquee 5s linear infinite;
-        }
-        
-        @keyframes marquee {
-            from {
-                transform: translateX(10%);
-            }
-            to {
-                transform: translateX(-100%);
-            }
-        }
-        
-        .timestamp.delivered {
-            color: green;
-            /* สีเขียวสำหรับสถานะจัดส่งแล้ว */
-        }
-@keyframes blink {
-    0% { opacity: 1; }   /* เริ่มต้นโปร่งใสเต็ม */
-    50% { opacity: 0; }  /* กลางทางทำให้โปร่งใส */
-    100% { opacity: 1; } /* กลับมาแสดง */
+<style>
+
+/* =========================================================
+   BASIC
+========================================================= */
+
+* {
+  box-sizing: border-box;
 }
 
-.blink-text {
-    animation: blink 1s infinite; /* ทำให้ข้อความกระพริบทุก 1 วินาที */
-    font-weight: bold; 
+
+:root {
+
+  --primary: #173f70;
+  --primary2: #2464a5;
+
+  --bg: #f3f6fa;
+  --card: #ffffff;
+
+  --text: #172033;
+  --muted: #718096;
+
+  --border: #dfe6ef;
+
+  --blue: #2563eb;
+  --blue-bg: #eff6ff;
+
+  --green: #16a34a;
+  --green-bg: #ecfdf3;
+
+  --orange: #ed861b;
+  --orange-bg: #fff7ed;
+
+  --red: #dc2626;
+  --red-bg: #fff1f2;
+
+  --gray-bg: #f1f5f9;
+
 }
 
-        
-        .key-box {
-            display: inline-block;
-            padding: 8px 12px;
-            border-radius: 12px;
-            background: #a0e9ff;
-            background: -webkit-linear-gradient(0deg, #a0e9ff 0%, #a8f0ff 50%, #c6f5ff 100%);
-            background: linear-gradient(0deg, #a0e9ff 0%, #a8f0ff 50%, #c6f5ff 100%);
-            background-color: #fff5e6;
-            color: #ff9800;
-            font-weight: bold;
-        }
-        
-        h1 {
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            color: #ff9800;
-            /* สีส้ม */
-            padding: 10px;
-            border-radius: 10px;
-            background: linear-gradient(to right, #ffcc80, #ff9800);
-            color: white;
-            display: inline-block;
-            padding: 10px 20px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-        }
-        
-        #loginContainer {
-            text-align: center;
-            margin: 20px auto;
-            padding: 20px;
-            width: 300px;
-            background: #fff5e6;
-            border-radius: 10px;
-            border: 2px solid #ff9800;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        #passwordInput {
-            width: 80%;
-            padding: 8px;
-            margin: 10px 0;
-            border: 1px solid #ff9800;
-            border-radius: 5px;
-        }
-        
-        button {
-            background: #ff9800;
-            color: white;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        
-        button:hover {
-            background: #e68900;
-        }
-        
-        .truck-header {
-            display: flex;
-            align-items: center;
-            /* จัดให้อยู่กึ่งกลางแนวตั้ง */
-            justify-content: center;
-            /* จัดให้อยู่กึ่งกลางแนวนอน */
-            gap: 10px;
-            /* ระยะห่างระหว่างไอคอนกับข้อความ */
-        }
-        
-        .truck-header .fa-bounce {
-            display: inline-block;
-        }
-        
-        .driver-name {
-            font-weight: bold;
-            color: #007bff;
-            /* สีฟ้าสำหรับเน้นชื่อ */
-            margin-right: 10px;
-            /* เพิ่มระยะห่างระหว่างชื่อกับชื่อรถ */
-        }
-document.addEventListener("DOMContentLoaded", () => {
-    fetchData();
-});
 
-    </style>
+body {
+
+  margin: 0;
+
+  background:
+    var(--bg);
+
+  color:
+    var(--text);
+
+  font-family:
+    Arial,
+    "Noto Sans Thai",
+    sans-serif;
+
+}
+
+
+button,
+input {
+
+  font-family:
+    inherit;
+
+}
+
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.app-header {
+
+  background:
+    linear-gradient(
+      135deg,
+      #16395f,
+      #2466a7
+    );
+
+  color:
+    white;
+
+  box-shadow:
+    0 3px 18px
+    rgba(0,0,0,.15);
+
+}
+
+
+.header-inner {
+
+  max-width:
+    1600px;
+
+  min-height:
+    88px;
+
+  margin:
+    auto;
+
+  padding:
+    11px 22px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  gap:
+    20px;
+
+}
+
+
+
+/* =========================================================
+   COMPANY BRAND
+========================================================= */
+
+.company-brand {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    15px;
+
+  min-width:
+    0;
+
+}
+
+
+.company-logo-wrap {
+
+  width:
+    66px;
+
+  height:
+    66px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+}
+
+
+.company-logo {
+
+  max-width:
+    64px;
+
+  max-height:
+    64px;
+
+  object-fit:
+    contain;
+
+  display:
+    block;
+
+}
+
+
+.company-text {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  justify-content:
+    center;
+
+  min-width:
+    0;
+
+}
+
+
+.company-name {
+
+  font-size:
+    22px;
+
+  line-height:
+    1.25;
+
+  font-weight:
+    800;
+
+  color:
+    #ffffff;
+
+}
+
+
+.company-system-line {
+
+  margin-top:
+    5px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    7px;
+
+  flex-wrap:
+    wrap;
+
+  font-size:
+    12px;
+
+  line-height:
+    1.35;
+
+  color:
+    rgba(
+      255,
+      255,
+      255,
+      .88
+    );
+
+}
+
+
+.system-name {
+
+  font-weight:
+    800;
+
+  color:
+    #ffffff;
+
+}
+
+
+.system-dot {
+
+  opacity:
+    .45;
+
+}
+
+
+
+/* =========================================================
+   HEADER RIGHT
+========================================================= */
+
+.header-right {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    8px;
+
+}
+
+
+.online-box {
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .13
+    );
+
+  border-radius:
+    11px;
+
+  padding:
+    9px 12px;
+
+  display:
+    flex;
+
+  gap:
+    7px;
+
+  align-items:
+    center;
+
+  font-size:
+    12px;
+
+}
+
+
+.online-dot {
+
+  width:
+    8px;
+
+  height:
+    8px;
+
+  border-radius:
+    50%;
+
+  background:
+    #53e58a;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(
+      83,
+      229,
+      138,
+      .15
+    );
+
+}
+
+
+.login-top-btn {
+
+  border:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      .35
+    );
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .12
+    );
+
+  color:
+    white;
+
+  padding:
+    9px 13px;
+
+  border-radius:
+    10px;
+
+  cursor:
+    pointer;
+
+  font-weight:
+    700;
+
+}
+
+
+.driver-header {
+
+  display:
+    none;
+
+  align-items:
+    center;
+
+  gap:
+    8px;
+
+}
+
+
+.driver-header.show {
+
+  display:
+    flex;
+
+}
+
+
+.driver-profile {
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .13
+    );
+
+  border-radius:
+    12px;
+
+  padding:
+    5px 9px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    8px;
+
+}
+
+
+.header-driver-photo {
+
+  width:
+    35px;
+
+  height:
+    35px;
+
+  border-radius:
+    50%;
+
+  object-fit:
+    cover;
+
+  border:
+    2px solid
+    rgba(
+      255,
+      255,
+      255,
+      .75
+    );
+
+  background:
+    white;
+
+  flex-shrink:
+    0;
+
+}
+
+
+.header-driver-fallback {
+
+  width:
+    35px;
+
+  height:
+    35px;
+
+  border-radius:
+    50%;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .18
+    );
+
+  border:
+    2px solid
+    rgba(
+      255,
+      255,
+      255,
+      .45
+    );
+
+  font-size:
+    18px;
+
+  flex-shrink:
+    0;
+
+}
+
+
+.driver-profile-text {
+
+  font-size:
+    10px;
+
+  line-height:
+    1.4;
+
+}
+
+
+.driver-profile-name {
+
+  font-weight:
+    800;
+
+  font-size:
+    11px;
+
+}
+
+
+.logout-btn {
+
+  border:
+    0;
+
+  background:
+    rgba(
+      190,
+      20,
+      30,
+      .72
+    );
+
+  color:
+    white;
+
+  border-radius:
+    9px;
+
+  padding:
+    8px 10px;
+
+  cursor:
+    pointer;
+
+}
+
+
+
+/* =========================================================
+   MAIN
+========================================================= */
+
+.main {
+
+  max-width:
+    1600px;
+
+  margin:
+    auto;
+
+  padding:
+    20px 22px;
+
+}
+
+
+
+/* =========================================================
+   DRIVER VIEW BAR
+========================================================= */
+
+.driver-view-bar {
+
+  display:
+    none;
+
+  background:
+    #eaf4ff;
+
+  border:
+    1px solid
+    #b8d8fa;
+
+  border-radius:
+    14px;
+
+  padding:
+    10px 12px;
+
+  margin-bottom:
+    13px;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  gap:
+    10px;
+
+}
+
+
+.driver-view-bar.show {
+
+  display:
+    flex;
+
+}
+
+
+.driver-view-info {
+
+  font-size:
+    12px;
+
+  color:
+    #24518a;
+
+  font-weight:
+    700;
+
+}
+
+
+.view-buttons {
+
+  display:
+    flex;
+
+  gap:
+    6px;
+
+}
+
+
+.view-btn {
+
+  border:
+    0;
+
+  padding:
+    8px 11px;
+
+  border-radius:
+    9px;
+
+  cursor:
+    pointer;
+
+  background:
+    white;
+
+  color:
+    #36536f;
+
+  font-size:
+    11px;
+
+  font-weight:
+    700;
+
+}
+
+
+.view-btn.active {
+
+  background:
+    var(--primary);
+
+  color:
+    white;
+
+}
+
+
+
+/* =========================================================
+   DATE
+========================================================= */
+
+.date-panel {
+
+  background:
+    white;
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius:
+    15px;
+
+  padding:
+    12px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    7px;
+
+  flex-wrap:
+    wrap;
+
+  margin-bottom:
+    15px;
+
+}
+
+
+.date-btn {
+
+  border:
+    0;
+
+  padding:
+    9px 12px;
+
+  border-radius:
+    9px;
+
+  cursor:
+    pointer;
+
+  background:
+    var(--gray-bg);
+
+  color:
+    #445168;
+
+  font-size:
+    12px;
+
+  font-weight:
+    700;
+
+}
+
+
+.date-btn.active {
+
+  background:
+    var(--primary);
+
+  color:
+    white;
+
+}
+
+
+.date-select {
+
+  margin-left:
+    auto;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    6px;
+
+}
+
+
+.date-input {
+
+  border:
+    1px solid
+    #ccd7e5;
+
+  border-radius:
+    9px;
+
+  padding:
+    8px 10px;
+
+}
+
+
+.date-go {
+
+  border:
+    0;
+
+  background:
+    var(--blue);
+
+  color:
+    white;
+
+  padding:
+    9px 12px;
+
+  border-radius:
+    9px;
+
+  cursor:
+    pointer;
+
+  font-weight:
+    700;
+
+}
+
+
+.history-alert {
+
+  display:
+    none;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  padding:
+    10px 13px;
+
+  margin-bottom:
+    14px;
+
+  border-radius:
+    12px;
+
+  background:
+    #fff8e9;
+
+  border:
+    1px solid
+    #f4ce86;
+
+  color:
+    #86560d;
+
+  font-size:
+    12px;
+
+}
+
+
+.history-alert.show {
+
+  display:
+    flex;
+
+}
+
+
+.return-current {
+
+  border:
+    0;
+
+  background:
+    #8b5b12;
+
+  color:
+    white;
+
+  border-radius:
+    8px;
+
+  padding:
+    7px 10px;
+
+  cursor:
+    pointer;
+
+}
+
+
+
+/* =========================================================
+   STATS
+========================================================= */
+
+.stats {
+
+  display:
+    grid;
+
+  grid-template-columns:
+    repeat(
+      5,
+      minmax(
+        130px,
+        1fr
+      )
+    );
+
+  gap:
+    13px;
+
+}
+
+
+.stat {
+
+  position:
+    relative;
+
+  overflow:
+    hidden;
+
+  background:
+    white;
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius:
+    15px;
+
+  padding:
+    16px;
+
+  box-shadow:
+    0 3px 14px
+    rgba(
+      24,
+      59,
+      107,
+      .05
+    );
+
+}
+
+
+.stat::before {
+
+  content:
+    "";
+
+  position:
+    absolute;
+
+  top:
+    0;
+
+  left:
+    0;
+
+  bottom:
+    0;
+
+  width:
+    4px;
+
+  background:
+    var(--blue);
+
+}
+
+
+.stat.shipping::before {
+  background:
+    var(--orange);
+}
+
+
+.stat.done::before {
+  background:
+    var(--green);
+}
+
+
+.stat.late::before {
+  background:
+    var(--red);
+}
+
+
+.stat.pending::before {
+  background:
+    #718096;
+}
+
+
+.stat-label {
+
+  color:
+    var(--muted);
+
+  font-size:
+    12px;
+
+}
+
+
+.stat-value {
+
+  font-size:
+    28px;
+
+  font-weight:
+    800;
+
+  margin-top:
+    5px;
+
+}
+
+
+
+/* =========================================================
+   TOOLBAR
+========================================================= */
+
+.toolbar {
+
+  margin-top:
+    17px;
+
+  background:
+    white;
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius:
+    15px;
+
+  padding:
+    12px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    7px;
+
+  flex-wrap:
+    wrap;
+
+}
+
+
+.search {
+
+  flex:
+    1;
+
+  min-width:
+    280px;
+
+  border:
+    1px solid
+    #ccd7e5;
+
+  border-radius:
+    9px;
+
+  padding:
+    10px 13px;
+
+  outline:
+    none;
+
+}
+
+
+.filter-btn {
+
+  border:
+    0;
+
+  border-radius:
+    9px;
+
+  background:
+    var(--gray-bg);
+
+  color:
+    #465268;
+
+  padding:
+    9px 12px;
+
+  font-size:
+    11px;
+
+  cursor:
+    pointer;
+
+  font-weight:
+    700;
+
+}
+
+
+.filter-btn.active {
+
+  color:
+    white;
+
+  background:
+    var(--primary);
+
+}
+
+
+.refresh-btn {
+
+  border:
+    1px solid
+    #ccd7e5;
+
+  border-radius:
+    9px;
+
+  background:
+    white;
+
+  padding:
+    9px 11px;
+
+  cursor:
+    pointer;
+
+}
+
+
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+.section-head {
+
+  margin-top:
+    20px;
+
+  margin-bottom:
+    10px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+}
+
+
+.section-title {
+
+  font-size:
+    18px;
+
+  font-weight:
+    800;
+
+}
+
+
+.result-count {
+
+  color:
+    var(--muted);
+
+  font-size:
+    11px;
+
+}
+
+
+
+/* =========================================================
+   TRUCK
+========================================================= */
+
+.truck-grid {
+
+  display:
+    grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(
+        0,
+        1fr
+      )
+    );
+
+  gap:
+    15px;
+
+}
+
+
+.truck-card {
+
+  background:
+    white;
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius:
+    17px;
+
+  overflow:
+    hidden;
+
+  box-shadow:
+    0 3px 15px
+    rgba(
+      25,
+      59,
+      100,
+      .05
+    );
+
+}
+
+
+.truck-card.my-truck {
+
+  border:
+    1px solid
+    #91bde9;
+
+  box-shadow:
+    0 5px 20px
+    rgba(
+      37,
+      99,
+      235,
+      .10
+    );
+
+}
+
+
+.truck-head {
+
+  padding:
+    15px 16px;
+
+  border-bottom:
+    1px solid
+    #edf1f5;
+
+  display:
+    flex;
+
+  justify-content:
+    space-between;
+
+  gap:
+    10px;
+
+}
+
+
+.license {
+
+  font-size:
+    18px;
+
+  font-weight:
+    800;
+
+}
+
+
+.my-badge {
+
+  display:
+    inline-block;
+
+  margin-left:
+    6px;
+
+  padding:
+    3px 7px;
+
+  border-radius:
+    12px;
+
+  background:
+    var(--blue-bg);
+
+  color:
+    var(--blue);
+
+  font-size:
+    9px;
+
+  vertical-align:
+    middle;
+
+}
+
+
+
+/* =========================================================
+   DRIVER PHOTO IN CARD
+========================================================= */
+
+.driver-line {
+
+  margin-top:
+    7px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    7px;
+
+  color:
+    var(--muted);
+
+  font-size:
+    11px;
+
+}
+
+
+.driver-avatar {
+
+  width:
+    34px;
+
+  height:
+    34px;
+
+  border-radius:
+    50%;
+
+  object-fit:
+    cover;
+
+  flex-shrink:
+    0;
+
+  border:
+    2px solid
+    #d9e5f2;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0 2px 5px
+    rgba(
+      0,
+      0,
+      0,
+      .09
+    );
+
+}
+
+
+.driver-avatar-fallback {
+
+  width:
+    34px;
+
+  height:
+    34px;
+
+  border-radius:
+    50%;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  background:
+    #edf4fb;
+
+  border:
+    2px solid
+    #d9e5f2;
+
+  color:
+    #456a91;
+
+  font-size:
+    17px;
+
+}
+
+
+.driver-meta {
+
+  min-width:
+    0;
+
+}
+
+
+.driver-name-text {
+
+  color:
+    #53657b;
+
+  font-weight:
+    700;
+
+}
+
+
+.driver-date {
+
+  margin-top:
+    2px;
+
+  font-size:
+    10px;
+
+  color:
+    #8492a6;
+
+}
+
+
+.trip-badge {
+
+  background:
+    var(--blue-bg);
+
+  color:
+    #235b99;
+
+  padding:
+    7px 10px;
+
+  border-radius:
+    20px;
+
+  height:
+    fit-content;
+
+  font-size:
+    11px;
+
+  font-weight:
+    700;
+
+}
+
+
+
+/* =========================================================
+   PROGRESS
+========================================================= */
+
+.progress-wrap {
+
+  padding:
+    13px 16px 5px;
+
+}
+
+
+.progress-label {
+
+  display:
+    flex;
+
+  justify-content:
+    space-between;
+
+  color:
+    var(--muted);
+
+  font-size:
+    10px;
+
+  margin-bottom:
+    7px;
+
+}
+
+
+.progress {
+
+  height:
+    8px;
+
+  border-radius:
+    9px;
+
+  overflow:
+    hidden;
+
+  background:
+    #e9eef3;
+
+}
+
+
+.progress-bar {
+
+  height:
+    100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      #16a34a,
+      #4cc978
+    );
+
+}
+
+
+
+/* =========================================================
+   CUSTOMER
+========================================================= */
+
+.customer-list {
+
+  padding:
+    7px 13px 13px;
+
+}
+
+
+.customer-row {
+
+  padding:
+    13px 4px;
+
+  border-bottom:
+    1px solid
+    #edf1f5;
+
+}
+
+
+.customer-row:last-child {
+
+  border-bottom:
+    0;
+
+}
+
+
+.customer-row.current-delivery {
+
+  background:
+    linear-gradient(
+      90deg,
+      #fff8ec,
+      #fffdf9
+    );
+
+  border:
+    1px solid
+    #ffedd5;
+
+  border-radius:
+    11px;
+
+  padding:
+    10px 8px;
+
+  margin:
+    2px 0;
+
+}
+
+
+.customer-top {
+
+  display:
+    grid;
+
+  grid-template-columns:
+    minmax(
+      0,
+      1fr
+    )
+    auto;
+
+  gap:
+    10px;
+
+}
+
+
+.customer-main {
+
+  display:
+    flex;
+
+  gap:
+    10px;
+
+  min-width:
+    0;
+
+}
+
+
+.status-dot {
+
+  width:
+    10px;
+
+  height:
+    10px;
+
+  margin-top:
+    6px;
+
+  border-radius:
+    50%;
+
+  flex-shrink:
+    0;
+
+  background:
+    #b3bcc8;
+
+}
+
+
+.status-dot.done {
+  background:
+    var(--green);
+}
+
+
+.status-dot.shipping {
+
+  background:
+    var(--orange);
+
+  box-shadow:
+    0 0 0 4px
+    rgba(
+      237,
+      134,
+      27,
+      .14
+    );
+
+}
+
+
+.status-dot.late {
+  background:
+    var(--red);
+}
+
+
+.customer-name {
+
+  font-weight:
+    750;
+
+  line-height:
+    1.4;
+
+}
+
+
+.customer-code {
+
+  color:
+    var(--muted);
+
+  font-size:
+    10px;
+
+  margin-top:
+    3px;
+
+}
+
+
+.customer-right {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  align-items:
+    flex-end;
+
+  gap:
+    6px;
+
+  min-width:
+    120px;
+
+}
+
+
+
+/* =========================================================
+   BADGES
+========================================================= */
+
+.badge {
+
+  border-radius:
+    20px;
+
+  padding:
+    5px 8px;
+
+  font-size:
+    10px;
+
+  font-weight:
+    700;
+
+  white-space:
+    nowrap;
+
+}
+
+
+.badge.done {
+
+  background:
+    var(--green-bg);
+
+  color:
+    var(--green);
+
+}
+
+
+.badge.shipping {
+
+  background:
+    var(--orange-bg);
+
+  color:
+    #bd6204;
+
+}
+
+
+.badge.pending {
+
+  background:
+    var(--gray-bg);
+
+  color:
+    #64748b;
+
+}
+
+
+.badge.late {
+
+  background:
+    var(--red-bg);
+
+  color:
+    var(--red);
+
+}
+
+
+
+/* =========================================================
+   FIXED MAP
+========================================================= */
+
+.delivery-detail-area {
+
+  margin-top:
+    7px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  min-height:
+    33px;
+
+  position:
+    relative;
+
+  overflow:
+    hidden;
+
+  width:
+    100%;
+
+}
+
+
+.fixed-map-area {
+
+  position:
+    relative;
+
+  z-index:
+    20;
+
+  flex-shrink:
+    0;
+
+}
+
+
+.map-btn-fixed {
+
+  border:
+    1px solid
+    #bfd2ef;
+
+  background:
+    #f4f8ff;
+
+  color:
+    #265b9c;
+
+  border-radius:
+    8px;
+
+  padding:
+    6px 9px;
+
+  cursor:
+    pointer;
+
+  font-size:
+    10px;
+
+  font-weight:
+    700;
+
+  white-space:
+    nowrap;
+
+}
+
+
+
+/* =========================================================
+   MOVING DELIVERY STATUS
+========================================================= */
+
+.delivery-motion-area {
+
+  position:
+    relative;
+
+  flex:
+    1;
+
+  height:
+    31px;
+
+  min-width:
+    120px;
+
+  overflow:
+    hidden;
+
+  margin-left:
+    10px;
+
+}
+
+
+.moving-delivery-status {
+
+  position:
+    absolute;
+
+  left:
+    100%;
+
+  top:
+    4px;
+
+  display:
+    inline-flex;
+
+  align-items:
+    center;
+
+  gap:
+    7px;
+
+  white-space:
+    nowrap;
+
+  color:
+    #dd7004;
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+
+  animation:
+    deliveryMoveRightToLeft
+    12s
+    linear
+    infinite;
+
+}
+
+
+.moving-truck-icon {
+
+  font-size:
+    20px;
+
+}
+
+
+.moving-shipping-text {
+
+  color:
+    #e2760a;
+
+  font-weight:
+    800;
+
+}
+
+
+@keyframes deliveryMoveRightToLeft {
+
+  0% {
+
+    left:
+      100%;
+
+    opacity:
+      1;
+
+  }
+
+
+  78% {
+
+    left:
+      2%;
+
+    opacity:
+      1;
+
+  }
+
+
+  86% {
+
+    left:
+      2%;
+
+    opacity:
+      1;
+
+  }
+
+
+  89% {
+
+    left:
+      2%;
+
+    opacity:
+      0;
+
+  }
+
+
+  90% {
+
+    left:
+      100%;
+
+    opacity:
+      0;
+
+  }
+
+
+  97% {
+
+    left:
+      100%;
+
+    opacity:
+      0;
+
+  }
+
+
+  100% {
+
+    left:
+      100%;
+
+    opacity:
+      1;
+
+  }
+
+}
+
+
+
+/* =========================================================
+   TIME / ACTIONS
+========================================================= */
+
+.delivery-time,
+.complete-time {
+
+  color:
+    #64748b;
+
+  font-size:
+    10px;
+
+  white-space:
+    nowrap;
+
+}
+
+
+.actions {
+
+  display:
+    flex;
+
+  gap:
+    5px;
+
+  flex-wrap:
+    wrap;
+
+  justify-content:
+    flex-end;
+
+}
+
+
+.action-btn {
+
+  border-radius:
+    8px;
+
+  padding:
+    6px 8px;
+
+  cursor:
+    pointer;
+
+  font-size:
+    10px;
+
+  font-weight:
+    700;
+
+}
+
+
+.start-btn {
+
+  border:
+    1px solid
+    #ffd3a4;
+
+  background:
+    #fff8ef;
+
+  color:
+    #ae5800;
+
+}
+
+
+.complete-btn {
+
+  border:
+    1px solid
+    #b2e5c3;
+
+  background:
+    #f1fbf5;
+
+  color:
+    #14713a;
+
+}
+
+
+.no-permission {
+
+  color:
+    #9aa4b2;
+
+  font-size:
+    9px;
+
+}
+
+
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.empty {
+
+  grid-column:
+    1 / -1;
+
+  background:
+    white;
+
+  border:
+    1px dashed
+    #cbd5e1;
+
+  border-radius:
+    16px;
+
+  padding:
+    50px;
+
+  text-align:
+    center;
+
+  color:
+    var(--muted);
+
+}
+
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.modal {
+
+  display:
+    none;
+
+  position:
+    fixed;
+
+  inset:
+    0;
+
+  z-index:
+    9000;
+
+  background:
+    rgba(
+      13,
+      31,
+      52,
+      .58
+    );
+
+  backdrop-filter:
+    blur(
+      3px
+    );
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  padding:
+    15px;
+
+}
+
+
+.modal.show {
+
+  display:
+    flex;
+
+}
+
+
+.modal-card {
+
+  width:
+    100%;
+
+  max-width:
+    390px;
+
+  background:
+    white;
+
+  border-radius:
+    18px;
+
+  box-shadow:
+    0 18px 50px
+    rgba(
+      0,
+      0,
+      0,
+      .25
+    );
+
+  overflow:
+    hidden;
+
+}
+
+
+.modal-head {
+
+  padding:
+    20px;
+
+  text-align:
+    center;
+
+  background:
+    linear-gradient(
+      135deg,
+      #183a64,
+      #2767a8
+    );
+
+  color:
+    white;
+
+}
+
+
+.modal-driver-photo {
+
+  width:
+    72px;
+
+  height:
+    72px;
+
+  margin:
+    auto;
+
+  border-radius:
+    50%;
+
+  object-fit:
+    cover;
+
+  border:
+    3px solid
+    rgba(
+      255,
+      255,
+      255,
+      .85
+    );
+
+  background:
+    white;
+
+  display:
+    none;
+
+}
+
+
+.modal-icon {
+
+  font-size:
+    35px;
+
+}
+
+
+.modal-title {
+
+  font-size:
+    19px;
+
+  font-weight:
+    800;
+
+  margin-top:
+    7px;
+
+}
+
+
+.modal-sub {
+
+  font-size:
+    11px;
+
+  margin-top:
+    4px;
+
+  opacity:
+    .8;
+
+}
+
+
+.modal-body {
+
+  padding:
+    20px;
+
+}
+
+
+.password-label {
+
+  font-size:
+    12px;
+
+  font-weight:
+    700;
+
+  margin-bottom:
+    7px;
+
+}
+
+
+.password-input {
+
+  width:
+    100%;
+
+  padding:
+    13px;
+
+  border-radius:
+    10px;
+
+  border:
+    1px solid
+    #cbd6e4;
+
+  font-size:
+    20px;
+
+  text-align:
+    center;
+
+  letter-spacing:
+    5px;
+
+  outline:
+    none;
+
+}
+
+
+.login-help {
+
+  margin-top:
+    7px;
+
+  color:
+    var(--muted);
+
+  font-size:
+    10px;
+
+  text-align:
+    center;
+
+}
+
+
+.modal-actions {
+
+  margin-top:
+    16px;
+
+  display:
+    flex;
+
+  gap:
+    7px;
+
+}
+
+
+.modal-cancel {
+
+  flex:
+    1;
+
+  border:
+    0;
+
+  border-radius:
+    9px;
+
+  padding:
+    10px;
+
+  cursor:
+    pointer;
+
+  background:
+    var(--gray-bg);
+
+}
+
+
+.modal-login {
+
+  flex:
+    2;
+
+  border:
+    0;
+
+  border-radius:
+    9px;
+
+  padding:
+    10px;
+
+  cursor:
+    pointer;
+
+  background:
+    var(--primary);
+
+  color:
+    white;
+
+  font-weight:
+    700;
+
+}
+
+
+
+/* =========================================================
+   LICENSE OPTIONS
+========================================================= */
+
+.license-options {
+
+  display:
+    grid;
+
+  gap:
+    8px;
+
+}
+
+
+.license-option {
+
+  width:
+    100%;
+
+  text-align:
+    left;
+
+  padding:
+    11px;
+
+  border-radius:
+    10px;
+
+  cursor:
+    pointer;
+
+  border:
+    1px solid
+    #d7e0ec;
+
+  background:
+    #f8fafc;
+
+}
+
+
+.option-row {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    10px;
+
+}
+
+
+.option-photo {
+
+  width:
+    42px;
+
+  height:
+    42px;
+
+  object-fit:
+    cover;
+
+  border-radius:
+    50%;
+
+  border:
+    2px solid
+    #d7e3ef;
+
+}
+
+
+.option-fallback {
+
+  width:
+    42px;
+
+  height:
+    42px;
+
+  border-radius:
+    50%;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  background:
+    #edf4fb;
+
+  font-size:
+    20px;
+
+}
+
+
+.option-license {
+
+  font-weight:
+    800;
+
+  font-size:
+    14px;
+
+}
+
+
+.option-driver {
+
+  color:
+    var(--muted);
+
+  font-size:
+    10px;
+
+  margin-top:
+    3px;
+
+}
+
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading {
+
+  display:
+    none;
+
+  position:
+    fixed;
+
+  inset:
+    0;
+
+  z-index:
+    9999;
+
+  background:
+    rgba(
+      244,
+      247,
+      251,
+      .72
+    );
+
+  backdrop-filter:
+    blur(
+      2px
+    );
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+}
+
+
+.loading.show {
+
+  display:
+    flex;
+
+}
+
+
+.loading-box {
+
+  padding:
+    19px 26px;
+
+  border-radius:
+    14px;
+
+  background:
+    white;
+
+  font-weight:
+    800;
+
+  box-shadow:
+    0 10px 35px
+    rgba(
+      0,
+      0,
+      0,
+      .15
+    );
+
+}
+
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:1050px) {
+
+  .stats {
+
+    grid-template-columns:
+      repeat(
+        2,
+        1fr
+      );
+
+  }
+
+
+  .truck-grid {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+}
+
+
+
+@media(max-width:650px) {
+
+  .header-inner {
+
+    padding:
+      10px 12px;
+
+    align-items:
+      flex-start;
+
+  }
+
+
+  .company-logo-wrap {
+
+    width:
+      50px;
+
+    height:
+      50px;
+
+  }
+
+
+  .company-logo {
+
+    max-width:
+      48px;
+
+    max-height:
+      48px;
+
+  }
+
+
+  .company-name {
+
+    font-size:
+      15px;
+
+  }
+
+
+  .company-system-line {
+
+    font-size:
+      9px;
+
+    gap:
+      4px;
+
+  }
+
+
+  .online-box {
+
+    display:
+      none;
+
+  }
+
+
+  .driver-profile-text {
+
+    display:
+      none;
+
+  }
+
+
+  .main {
+
+    padding:
+      11px;
+
+  }
+
+
+  .date-select {
+
+    width:
+      100%;
+
+    margin-left:
+      0;
+
+  }
+
+
+  .date-input {
+
+    flex:
+      1;
+
+  }
+
+
+  .stats {
+
+    gap:
+      8px;
+
+  }
+
+
+  .stat-value {
+
+    font-size:
+      22px;
+
+  }
+
+
+  .search {
+
+    min-width:
+      100%;
+
+  }
+
+
+  .customer-top {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .customer-right {
+
+    align-items:
+      flex-start;
+
+    margin-left:
+      20px;
+
+    min-width:
+      0;
+
+  }
+
+
+  .actions {
+
+    justify-content:
+      flex-start;
+
+  }
+
+
+  .driver-view-bar {
+
+    flex-direction:
+      column;
+
+    align-items:
+      flex-start;
+
+  }
+
+}
+
+/* =========================================================
+   v2.5 READABILITY & MOBILE OPTIMIZATION
+   วางไว้ท้าย <style>
+========================================================= */
+
+
+/* =========================================================
+   DESKTOP - เพิ่มความเด่นชัด
+========================================================= */
+
+body {
+  font-size: 15px;
+}
+
+
+/* Header */
+
+.company-name {
+  font-size: 25px;
+  font-weight: 900;
+  letter-spacing: .1px;
+}
+
+.company-system-line {
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.system-name {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+
+/* Dashboard counters */
+
+.stat {
+  padding: 19px 18px;
+}
+
+.stat-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 34px;
+  font-weight: 900;
+  margin-top: 6px;
+}
+
+
+/* Toolbar */
+
+.search {
+  font-size: 15px;
+  padding: 12px 14px;
+}
+
+.filter-btn {
+  font-size: 13px;
+  padding: 11px 14px;
+}
+
+.refresh-btn {
+  font-size: 13px;
+  padding: 10px 13px;
+}
+
+.date-btn {
+  font-size: 13px;
+  padding: 10px 14px;
+}
+
+.date-input {
+  font-size: 14px;
+  padding: 10px 11px;
+}
+
+.date-go {
+  font-size: 13px;
+  padding: 10px 14px;
+}
+
+
+/* Section */
+
+.section-title {
+  font-size: 21px;
+}
+
+.result-count {
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   TRUCK CARD
+========================================================= */
+
+.truck-head {
+  padding: 18px;
+}
+
+.license {
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.trip-badge {
+  font-size: 13px;
+  padding: 8px 12px;
+}
+
+
+/* Driver */
+
+.driver-line {
+  margin-top: 9px;
+  gap: 10px;
+}
+
+.driver-avatar {
+  width: 44px;
+  height: 44px;
+}
+
+.driver-avatar-fallback {
+  width: 44px;
+  height: 44px;
+  font-size: 21px;
+}
+
+.driver-name-text {
+  font-size: 14px;
+  font-weight: 800;
+  color: #34465b;
+}
+
+.driver-date {
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+
+/* Progress */
+
+.progress-wrap {
+  padding: 15px 18px 7px;
+}
+
+.progress-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.progress {
+  height: 10px;
+}
+
+
+/* =========================================================
+   CUSTOMER DETAIL
+========================================================= */
+
+.customer-list {
+  padding: 9px 15px 16px;
+}
+
+.customer-row {
+  padding: 16px 7px;
+}
+
+.customer-row.current-delivery {
+  padding: 14px 10px;
+}
+
+.customer-main {
+  gap: 12px;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  margin-top: 7px;
+}
+
+.customer-name {
+  font-size: 17px;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.customer-code {
+  font-size: 13px;
+  margin-top: 4px;
+  color: #66768a;
+}
+
+
+/* Status badge */
+
+.badge {
+  font-size: 12px;
+  padding: 7px 11px;
+  font-weight: 800;
+}
+
+.customer-right {
+  min-width: 145px;
+  gap: 7px;
+}
+
+.delivery-time,
+.complete-time {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   MAP / UPDATE BUTTONS
+========================================================= */
+
+.map-btn-fixed {
+  font-size: 12px;
+  padding: 8px 12px;
+  min-height: 36px;
+}
+
+.action-btn {
+  font-size: 12px;
+  padding: 8px 11px;
+  min-height: 36px;
+}
+
+.no-permission {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+/* Moving Delivery */
+
+.delivery-detail-area {
+  min-height: 40px;
+  margin-top: 9px;
+}
+
+.delivery-motion-area {
+  height: 38px;
+}
+
+.moving-delivery-status {
+  top: 5px;
+  font-size: 14px;
+  gap: 8px;
+}
+
+.moving-truck-icon {
+  font-size: 25px;
+}
+
+.moving-shipping-text {
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   LOGIN HEADER
+========================================================= */
+
+.header-driver-photo {
+  width: 42px;
+  height: 42px;
+}
+
+.header-driver-fallback {
+  width: 42px;
+  height: 42px;
+}
+
+.driver-profile-name {
+  font-size: 13px;
+}
+
+.driver-profile-text {
+  font-size: 11px;
+}
+
+.login-top-btn {
+  font-size: 13px;
+  padding: 10px 14px;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1050px) {
+
+  .main {
+    padding: 16px;
+  }
+
+  .truck-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-name {
+    font-size: 18px;
+  }
+
+  .customer-code {
+    font-size: 13px;
+  }
+
+  .badge {
+    font-size: 13px;
+  }
+
+  .map-btn-fixed,
+  .action-btn {
+    font-size: 13px;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE - สำคัญที่สุด
+========================================================= */
+
+@media (max-width: 650px) {
+
+  body {
+    font-size: 16px;
+  }
+
+
+  /* ---------- Header ---------- */
+
+  .app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-inner {
+    min-height: auto;
+    padding: 12px 11px;
+    gap: 10px;
+  }
+
+  .company-brand {
+    gap: 10px;
+    flex: 1;
+  }
+
+  .company-logo-wrap {
+    width: 52px;
+    height: 52px;
+  }
+
+  .company-logo {
+    max-width: 52px;
+    max-height: 52px;
+  }
+
+  .company-name {
+    font-size: 17px;
+    line-height: 1.2;
+  }
+
+  .company-system-line {
+    font-size: 11px;
+    margin-top: 3px;
+    line-height: 1.35;
+  }
+
+  .system-name {
+    font-size: 11px;
+  }
+
+  .system-dot {
+    display: none;
+  }
+
+
+  /* บนมือถือถ้าพื้นที่น้อย ให้ชื่อระบบขึ้นบรรทัดใหม่ */
+  .company-system-line {
+    display: block;
+  }
+
+  .company-system-line span {
+    display: block;
+  }
+
+
+  .header-right {
+    align-self: center;
+  }
+
+  .online-box {
+    display: none;
+  }
+
+  .login-top-btn {
+    font-size: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .login-top-btn::after {
+    content: "🔐";
+    font-size: 20px;
+  }
+
+  .logout-btn {
+    font-size: 12px;
+    min-height: 40px;
+  }
+
+
+  /* ---------- Main ---------- */
+
+  .main {
+    padding: 10px;
+  }
+
+
+  /* ---------- Driver mode ---------- */
+
+  .driver-view-bar {
+    padding: 11px;
+  }
+
+  .driver-view-info {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .view-buttons {
+    width: 100%;
+  }
+
+  .view-btn {
+    flex: 1;
+    font-size: 14px;
+    min-height: 44px;
+  }
+
+
+  /* ---------- Date ---------- */
+
+  .date-panel {
+    padding: 9px;
+    gap: 6px;
+  }
+
+  .date-btn {
+    font-size: 13px;
+    padding: 10px 11px;
+    min-height: 42px;
+  }
+
+  .date-select {
+    margin-top: 4px;
+  }
+
+  .date-input {
+    min-height: 44px;
+    font-size: 15px;
+  }
+
+  .date-go {
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+
+  /* ---------- Dashboard stats ---------- */
+
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .stat {
+    padding: 15px;
+  }
+
+  .stat-label {
+    font-size: 13px;
+  }
+
+  .stat-value {
+    font-size: 29px;
+  }
+
+
+  /* ---------- Toolbar ---------- */
+
+  .toolbar {
+    position: sticky;
+    top: 76px;
+    z-index: 80;
+
+    padding: 9px;
+    gap: 6px;
+
+    box-shadow:
+      0 5px 18px
+      rgba(0,0,0,.08);
+  }
+
+  .search {
+    min-width: 100%;
+    font-size: 15px;
+    min-height: 44px;
+  }
+
+  .filter-btn {
+    font-size: 13px;
+    padding: 10px 11px;
+    min-height: 42px;
+  }
+
+  .refresh-btn {
+    font-size: 13px;
+    min-height: 42px;
+  }
+
+
+  /* ---------- Section ---------- */
+
+  .section-head {
+    margin-top: 16px;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  .result-count {
+    font-size: 12px;
+  }
+
+
+  /* =====================================================
+     MOBILE TRUCK CARD
+  ===================================================== */
+
+  .truck-grid {
+    display: block;
+  }
+
+  .truck-card {
+    margin-bottom: 14px;
+    border-radius: 16px;
+  }
+
+  .truck-head {
+    padding: 14px;
+  }
+
+  .license {
+    font-size: 22px;
+  }
+
+  .trip-badge {
+    font-size: 13px;
+    padding: 7px 11px;
+  }
+
+
+  /* Driver */
+
+  .driver-line {
+    margin-top: 10px;
+    gap: 10px;
+  }
+
+  .driver-avatar {
+    width: 52px;
+    height: 52px;
+  }
+
+  .driver-avatar-fallback {
+    width: 52px;
+    height: 52px;
+    font-size: 25px;
+  }
+
+  .driver-name-text {
+    font-size: 16px;
+    color: #26384d;
+  }
+
+  .driver-date {
+    font-size: 13px;
+  }
+
+
+  /* Progress */
+
+  .progress-wrap {
+    padding: 13px 14px 8px;
+  }
+
+  .progress-label {
+    font-size: 13px;
+  }
+
+  .progress {
+    height: 10px;
+  }
+
+
+  /* =====================================================
+     MOBILE CUSTOMER ROW
+  ===================================================== */
+
+  .customer-list {
+    padding: 6px 10px 13px;
+  }
+
+  .customer-row {
+    padding: 16px 8px;
+  }
+
+  .customer-row.current-delivery {
+    padding: 15px 10px;
+  }
+
+  .customer-top {
+    display: block;
+  }
+
+  .customer-main {
+    gap: 10px;
+  }
+
+  .status-dot {
+    width: 13px;
+    height: 13px;
+    margin-top: 8px;
+  }
+
+  .customer-name {
+    font-size: 18px;
+    font-weight: 850;
+    line-height: 1.4;
+  }
+
+  .customer-code {
+    font-size: 14px;
+    margin-top: 5px;
+  }
+
+
+  /* Right status ย้ายลงล่าง */
+
+  .customer-right {
+    margin-left: 23px;
+    margin-top: 10px;
+
+    display: flex;
+
+    flex-direction: row;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    min-width: 0;
+  }
+
+  .badge {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .delivery-time,
+  .complete-time {
+    font-size: 13px;
+  }
+
+
+  /* =====================================================
+     MAP / SHIPPING ON MOBILE
+  ===================================================== */
+
+  .delivery-detail-area {
+    margin-top: 10px;
+    min-height: 48px;
+  }
+
+  .map-btn-fixed {
+    font-size: 14px;
+    padding: 10px 13px;
+    min-height: 44px;
+  }
+
+  .delivery-motion-area {
+    height: 43px;
+    margin-left: 8px;
+  }
+
+  .moving-delivery-status {
+    top: 6px;
+    font-size: 16px;
+    gap: 8px;
+  }
+
+  .moving-truck-icon {
+    font-size: 28px;
+  }
+
+  .moving-shipping-text {
+    font-size: 16px;
+  }
+
+
+  /* =====================================================
+     MOBILE ACTION BUTTON
+  ===================================================== */
+
+  .actions {
+    width: 100%;
+    margin-top: 5px;
+    gap: 7px;
+  }
+
+  .action-btn {
+    min-height: 46px;
+
+    padding:
+      11px
+      15px;
+
+    font-size: 15px;
+
+    border-radius: 10px;
+  }
+
+  .start-btn,
+  .complete-btn {
+    flex: 1;
+  }
+
+  .no-permission {
+    font-size: 12px;
+  }
+
+
+  /* =====================================================
+     LOGIN PROFILE ON MOBILE
+  ===================================================== */
+
+  .driver-profile {
+    padding: 4px;
+    background: transparent;
+  }
+
+  .header-driver-photo,
+  .header-driver-fallback {
+    width: 42px;
+    height: 42px;
+  }
+
+  .driver-profile-text {
+    display: none;
+  }
+
+}
+
+
+/* =========================================================
+   EXTRA SMALL PHONE
+========================================================= */
+
+@media (max-width: 390px) {
+
+  .company-name {
+    font-size: 15px;
+  }
+
+  .company-system-line {
+    font-size: 10px;
+  }
+
+  .license {
+    font-size: 20px;
+  }
+
+  .customer-name {
+    font-size: 17px;
+  }
+
+  .stat-value {
+    font-size: 26px;
+  }
+
+  .filter-btn {
+    font-size: 12px;
+  }
+
+}
+
+
+/* =========================================================
+   v2.6 COMPACT STATUS + CUSTOMER TOP-LINE
+   - Dashboard summary: label + number on one line
+   - Map button: directly after customer name
+   - Shipping animation: on same top line as customer name
+========================================================= */
+
+.stat{
+  min-height: 76px;
+  padding: 14px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.stat-label{
+  font-size:14px;
+  font-weight:700;
+  margin:0;
+}
+.stat-value{
+  font-size:30px;
+  font-weight:900;
+  margin:0;
+  line-height:1;
+}
+
+/* Main customer heading line */
+.customer-heading-line{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+  width:100%;
+  flex-wrap:wrap;
+}
+.customer-heading-line .customer-name{
+  min-width:0;
+}
+.customer-heading-line .map-btn-fixed{
+  flex:0 0 auto;
+}
+.customer-heading-line .delivery-motion-area{
+  flex:1 1 150px;
+  min-width:130px;
+  height:34px;
+  margin-left:2px;
+}
+
+/* When map is placed beside name, no separate detail row is needed */
+.customer-heading-line .fixed-map-area{
+  display:inline-flex;
+  align-items:center;
+  flex:0 0 auto;
+}
+
+/* Shipping animation remains right-to-left, without map moving */
+.customer-heading-line .moving-delivery-status{
+  top:3px;
+}
+
+/* keep customer code directly under heading */
+.customer-code{
+  margin-top:5px;
+}
+
+@media (max-width:650px){
+  .stats{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+  }
+  .stat{
+    min-height:64px;
+    padding:11px 12px;
+    gap:7px;
+  }
+  .stat-label{
+    font-size:12px;
+    line-height:1.25;
+  }
+  .stat-value{
+    font-size:25px;
+  }
+
+  .customer-heading-line{
+    gap:7px;
+  }
+  .customer-heading-line .customer-name{
+    font-size:18px;
+  }
+  .customer-heading-line .map-btn-fixed{
+    min-height:36px;
+    padding:7px 10px;
+    font-size:13px;
+  }
+  .customer-heading-line .delivery-motion-area{
+    flex-basis:100%;
+    width:100%;
+    margin-left:0;
+    height:40px;
+  }
+  .customer-heading-line .moving-delivery-status{
+    top:5px;
+    font-size:15px;
+  }
+  .customer-heading-line .moving-truck-icon{
+    font-size:25px;
+  }
+  .customer-heading-line .moving-shipping-text{
+    font-size:15px;
+  }
+}
+
+@media (max-width:390px){
+  .stat{
+    padding:10px;
+  }
+  .stat-label{
+    font-size:11px;
+  }
+  .stat-value{
+    font-size:23px;
+  }
+}
+
+</style>
+
 </head>
 
+
+
 <body>
-	<!-- 🛑 ส่วนที่เพิ่มสำหรับปิดปรับปรุงระบบชั่วคราว (ลบออกเมื่อต้องการเปิดใช้งานปกติ) -->
-    <div id="maintenance-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;">
-        <div style="background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); max-width: 500px; border: 2px solid #ff9800;">
-            <div style="font-size: 50px; margin-bottom: 15px;">🛠️</div>
-            <h2 style="color: #ff9800; margin-bottom: 10px; font-size: 24px;">ระบบมีปัญหากรุณาติดต่อผู้ดูแลระบบ</h2>
-            <p style="color: #666; font-size: 16px; margin: 0;">ขออภัยในความไม่สะดวก ขณะนี้ระบบขัดข้องชั่วคราว โปรดลองใหม่อีกครั้งภายหลัง</p>
+
+
+<!-- ======================================================
+     HEADER
+====================================================== -->
+
+<header class="app-header">
+
+<div class="header-inner">
+
+
+<div class="company-brand">
+
+
+<div class="company-logo-wrap">
+
+<img
+  class="company-logo"
+  src="https://lh3.googleusercontent.com/d/1rlAx7j8TDQBCnqrBts_mzs75U1U1aYy3"
+  alt="บริษัท ไทยสยามอิงค์เจ็ท จำกัด"
+>
+
+</div>
+
+
+<div class="company-text">
+
+
+<div class="company-name">
+
+บริษัท ไทยสยามอิงค์เจ็ท จำกัด
+
+</div>
+
+
+<div class="company-system-line">
+
+<span class="system-name">
+
+Delivery Control Center
+
+</span>
+
+<span class="system-dot">
+•
+</span>
+
+<span>
+
+ระบบติดตามสถานะการจัดส่งสินค้า
+
+</span>
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+<div class="header-right">
+
+
+<div class="online-box">
+
+<span class="online-dot">
+</span>
+
+<span>
+
+ONLINE ·
+
+<span id="updatedAt">
+--
+</span>
+
+</span>
+
+</div>
+
+
+
+<button
+  id="loginButton"
+  class="login-top-btn"
+  onclick="openLogin()"
+>
+🔐 คนขับเข้าสู่ระบบ
+</button>
+
+
+
+<div
+  id="driverHeader"
+  class="driver-header"
+>
+
+
+<div class="driver-profile">
+
+
+<div id="driverHeaderAvatar">
+</div>
+
+
+<div class="driver-profile-text">
+
+<div
+  id="driverHeaderName"
+  class="driver-profile-name"
+>
+</div>
+
+<div id="driverHeaderLicense">
+</div>
+
+</div>
+
+
+</div>
+
+
+<button
+  class="logout-btn"
+  onclick="logoutDriver()"
+>
+ออก
+</button>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+</header>
+
+
+
+<main class="main">
+
+
+<!-- ======================================================
+     DRIVER VIEW
+====================================================== -->
+
+<div
+  id="driverViewBar"
+  class="driver-view-bar"
+>
+
+<div
+  id="driverViewInfo"
+  class="driver-view-info"
+>
+</div>
+
+
+<div class="view-buttons">
+
+
+<button
+  id="viewMineBtn"
+  class="view-btn active"
+  onclick="setViewMode('mine')"
+>
+🚚 งานของฉัน
+</button>
+
+
+<button
+  id="viewAllBtn"
+  class="view-btn"
+  onclick="setViewMode('all')"
+>
+👁 ดูภาพรวม
+</button>
+
+
+</div>
+
+</div>
+
+
+
+<!-- ======================================================
+     DATE
+====================================================== -->
+
+<section class="date-panel">
+
+
+<button
+  id="dateCurrent"
+  class="date-btn active"
+  onclick="
+    setDateMode(
+      'current',
+      this
+    )
+  "
+>
+📡 งานปัจจุบัน
+</button>
+
+
+<button
+  class="date-btn"
+  onclick="
+    setDateMode(
+      'today',
+      this
+    )
+  "
+>
+วันนี้
+</button>
+
+
+<button
+  class="date-btn"
+  onclick="
+    setDateMode(
+      'tomorrow',
+      this
+    )
+  "
+>
+พรุ่งนี้
+</button>
+
+
+<button
+  class="date-btn"
+  onclick="
+    setDateMode(
+      '7days',
+      this
+    )
+  "
+>
+7 วัน
+</button>
+
+
+<div class="date-select">
+
+<span>
+📅
+</span>
+
+<input
+  id="selectedDate"
+  type="date"
+  class="date-input"
+>
+
+<button
+  class="date-go"
+  onclick="loadSelectedDate()"
+>
+ดูวันที่
+</button>
+
+</div>
+
+
+</section>
+
+
+
+<div
+  id="historyAlert"
+  class="history-alert"
+>
+
+<span id="historyText">
+</span>
+
+<button
+  class="return-current"
+  onclick="backCurrent()"
+>
+กลับงานปัจจุบัน
+</button>
+
+</div>
+
+
+
+<!-- ======================================================
+     STATS
+====================================================== -->
+
+<section class="stats">
+
+
+<div class="stat">
+
+<div class="stat-label">
+งานทั้งหมด
+</div>
+
+<div
+  id="statTotal"
+  class="stat-value"
+>
+0
+</div>
+
+</div>
+
+
+<div class="stat shipping">
+
+<div class="stat-label">
+กำลังจัดส่ง
+</div>
+
+<div
+  id="statShipping"
+  class="stat-value"
+>
+0
+</div>
+
+</div>
+
+
+<div class="stat done">
+
+<div class="stat-label">
+จัดส่งสำเร็จ
+</div>
+
+<div
+  id="statDone"
+  class="stat-value"
+>
+0
+</div>
+
+</div>
+
+
+<div class="stat late">
+
+<div class="stat-label">
+งานค้างส่ง
+</div>
+
+<div
+  id="statLate"
+  class="stat-value"
+>
+0
+</div>
+
+</div>
+
+
+<div class="stat pending">
+
+<div class="stat-label">
+รอจัดส่ง
+</div>
+
+<div
+  id="statPending"
+  class="stat-value"
+>
+0
+</div>
+
+</div>
+
+
+</section>
+
+
+
+<!-- ======================================================
+     TOOLBAR
+====================================================== -->
+
+<section class="toolbar">
+
+
+<input
+  id="searchInput"
+  class="search"
+  placeholder="🔎 ค้นหาลูกค้า / คนขับ / ทะเบียนรถ / รหัสลูกค้า"
+  oninput="render()"
+>
+
+
+<button
+  class="filter-btn active"
+  onclick="
+    setStatusFilter(
+      'all',
+      this
+    )
+  "
+>
+ทั้งหมด
+</button>
+
+
+<button
+  class="filter-btn"
+  onclick="
+    setStatusFilter(
+      'shipping',
+      this
+    )
+  "
+>
+🚚 กำลังจัดส่ง
+</button>
+
+
+<button
+  class="filter-btn"
+  onclick="
+    setStatusFilter(
+      'done',
+      this
+    )
+  "
+>
+✅ ส่งสำเร็จ
+</button>
+
+
+<button
+  class="filter-btn"
+  onclick="
+    setStatusFilter(
+      'late',
+      this
+    )
+  "
+>
+⚠️ งานค้าง
+</button>
+
+
+<button
+  class="filter-btn"
+  onclick="
+    setStatusFilter(
+      'pending',
+      this
+    )
+  "
+>
+รอจัดส่ง
+</button>
+
+
+<button
+  class="refresh-btn"
+  onclick="loadData(true)"
+>
+🔄 Refresh
+</button>
+
+
+</section>
+
+
+
+<div class="section-head">
+
+<div class="section-title">
+รถและเที่ยวจัดส่ง
+</div>
+
+<div
+  id="resultCount"
+  class="result-count"
+>
+</div>
+
+</div>
+
+
+<section
+  id="truckContainer"
+  class="truck-grid"
+>
+</section>
+
+
+</main>
+
+
+
+<!-- ======================================================
+     LOGIN MODAL
+====================================================== -->
+
+<div
+  id="loginModal"
+  class="modal"
+>
+
+
+<div class="modal-card">
+
+
+<div class="modal-head">
+
+<div class="modal-icon">
+🚚
+</div>
+
+<div class="modal-title">
+เข้าสู่ระบบคนขับ
+</div>
+
+<div class="modal-sub">
+ใช้ตัวเลข 4 หลักของทะเบียนรถ
+</div>
+
+</div>
+
+
+<div class="modal-body">
+
+
+<div class="password-label">
+รหัสทะเบียนรถ 4 หลัก
+</div>
+
+
+<input
+  id="driverPassword"
+  type="password"
+  inputmode="numeric"
+  maxlength="4"
+  class="password-input"
+  placeholder="••••"
+  onkeydown="
+    if(event.key === 'Enter'){
+      doDriverLogin();
+    }
+  "
+>
+
+
+<div class="login-help">
+ตัวอย่าง 51-7617กท → ใช้รหัส 7617
+</div>
+
+
+<div class="modal-actions">
+
+
+<button
+  class="modal-cancel"
+  onclick="closeLogin()"
+>
+ยกเลิก
+</button>
+
+
+<button
+  class="modal-login"
+  onclick="doDriverLogin()"
+>
+เข้าสู่ระบบ
+</button>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+<!-- ======================================================
+     SELECT LICENSE
+====================================================== -->
+
+<div
+  id="licenseModal"
+  class="modal"
+>
+
+
+<div class="modal-card">
+
+
+<div class="modal-head">
+
+<div class="modal-icon">
+🚚
+</div>
+
+<div class="modal-title">
+เลือกทะเบียนรถ
+</div>
+
+<div class="modal-sub">
+พบเลขทะเบียน 4 หลักซ้ำมากกว่า 1 คัน
+</div>
+
+</div>
+
+
+<div class="modal-body">
+
+
+<div
+  id="licenseOptions"
+  class="license-options"
+>
+</div>
+
+
+<div class="modal-actions">
+
+<button
+  class="modal-cancel"
+  onclick="closeLicenseModal()"
+>
+ยกเลิก
+</button>
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+<!-- ======================================================
+     LOADING
+====================================================== -->
+
+<div
+  id="loading"
+  class="loading"
+>
+
+<div class="loading-box">
+
+🚚 กำลังประมวลผล...
+
+</div>
+
+</div>
+
+
+
+<script>
+/* =========================================================
+   THAISIAM DELIVERY CONTROL CENTER
+   GitHub Ready v3.0
+   GitHub Pages -> Apps Script API -> Google Sheets
+========================================================= */
+
+const API_URL = "https://script.google.com/macros/s/AKfycbxRojPjjz6nRkEG9bcubeXk6a8wtaDFsSpNL0DFcIVGc3vg7EyrNMu-rVEZJ-4Ashc-/exec";
+
+let allRows = [];
+let driverImages = {};
+let dateMode = "current";
+let selectedDate = "";
+let statusFilter = "all";
+
+let driverToken = "";
+let driverLicense = "";
+let driverNames = [];
+let driverViewMode = "all";
+let pendingPassword = "";
+
+/* ---------------- API ---------------- */
+
+async function apiCall(params = {}) {
+  const url = new URL(API_URL);
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      url.searchParams.set(key, value);
+    }
+  });
+
+  const response = await fetch(url.toString(), {
+    method: "GET",
+    cache: "no-store",
+    redirect: "follow"
+  });
+
+  if (!response.ok) {
+    throw new Error("HTTP " + response.status);
+  }
+
+  const data = await response.json();
+
+  if (data && data.success === false && data.message) {
+    throw new Error(data.message);
+  }
+
+  return data;
+}
+
+/* ---------------- DRIVER IMAGES ---------------- */
+
+async function loadDriverImages() {
+  try {
+    const result = await apiCall({ action: "driverImages" });
+    driverImages = result && result.images ? result.images : {};
+    render();
+  } catch (error) {
+    console.warn("DriverImages:", error);
+    driverImages = {};
+  }
+}
+
+function normalizeDriverName(name) {
+  return String(name || "").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function getDriverImage(name) {
+  const item = driverImages[normalizeDriverName(name)];
+  return item && item.image ? item.image : "";
+}
+
+function driverAvatarHtml(name, className = "driver-avatar") {
+  const image = getDriverImage(name);
+
+  if (image) {
+    return `
+      <img
+        class="${className}"
+        src="${escapeAttr(image)}"
+        alt="${escapeAttr(name)}"
+        onerror="this.style.display='none';"
+      >
+    `;
+  }
+
+  let fallback = "driver-avatar-fallback";
+
+  if (className === "header-driver-photo") {
+    fallback = "header-driver-fallback";
+  } else if (className === "option-photo") {
+    fallback = "option-fallback";
+  }
+
+  return `<div class="${fallback}">👤</div>`;
+}
+
+/* ---------------- LOAD DATA ---------------- */
+
+async function loadData(showLoading = false) {
+  if (showLoading) showLoadingBox();
+
+  try {
+    const data = await apiCall({
+      action: "data",
+      mode: dateMode,
+      date: selectedDate
+    });
+
+    allRows = data.rows || [];
+
+    document.getElementById("updatedAt").textContent =
+      new Date().toLocaleTimeString("th-TH", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+
+    updateHistory();
+    render();
+  } catch (error) {
+    alert("โหลดข้อมูลไม่สำเร็จ\n" + (error.message || error));
+  } finally {
+    hideLoadingBox();
+  }
+}
+
+/* ---------------- LOGIN MODAL ---------------- */
+
+function openLogin() {
+  const input = document.getElementById("driverPassword");
+  input.value = "";
+
+  document.getElementById("loginModal").classList.add("show");
+
+  setTimeout(() => input.focus(), 100);
+}
+
+function closeLogin() {
+  document.getElementById("loginModal").classList.remove("show");
+}
+
+async function doDriverLogin() {
+  const password = document
+    .getElementById("driverPassword")
+    .value.replace(/\D/g, "");
+
+  if (password.length !== 4) {
+    alert("กรุณากรอกตัวเลขทะเบียน 4 หลัก");
+    return;
+  }
+
+  pendingPassword = password;
+  showLoadingBox();
+
+  try {
+    const result = await apiCall({
+      action: "login",
+      password
+    });
+
+    if (result.needSelectLicense) {
+      closeLogin();
+      showLicenseSelection(result.candidates || []);
+      return;
+    }
+
+    completeLogin(result);
+  } catch (error) {
+    alert("เข้าสู่ระบบไม่สำเร็จ\n" + (error.message || error));
+  } finally {
+    hideLoadingBox();
+  }
+}
+
+function showLicenseSelection(candidates) {
+  const container = document.getElementById("licenseOptions");
+  container.innerHTML = "";
+
+  candidates.forEach(candidate => {
+    const button = document.createElement("button");
+    button.className = "license-option";
+
+    const drivers = candidate.drivers || [];
+    const firstDriver = drivers[0] || "";
+
+    button.innerHTML = `
+      <div class="option-row">
+        ${
+          firstDriver
+            ? driverAvatarHtml(firstDriver, "option-photo")
+            : `<div class="option-fallback">👤</div>`
+        }
+
+        <div>
+          <div class="option-license">
+            🚚 ${escapeHtml(candidate.license)}
+          </div>
+
+          <div class="option-driver">
+            ${escapeHtml(drivers.join(", ") || "-")}
+          </div>
         </div>
-    </div>
-    <!-- 🛑 สิ้นสุดส่วนปิดปรับปรุง -->
+      </div>
+    `;
 
-    <h1>🚚 ระบบติดตามสถานะขนส่ง</h1>
+    button.onclick = () => loginSelectedLicense(candidate.license);
+    container.appendChild(button);
+  });
 
-    <div id="loginContainer">
-        <label>กรุณาล็อกอินเข้าใช้งาน (เพื่อUpdate Status):</label>
-        <input type="password" id="passwordInput" placeholder="รหัสผ่าน">
-        <button onclick="login()">เข้าสู่ระบบ</button>
-    </div>
-
-    <div class="container">
-        <div id="truckData"></div>
-    </div>
-
-    <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxRojPjjz6nRkEG9bcubeXk6a8wtaDFsSpNL0DFcIVGc3vg7EyrNMu-rVEZJ-4Ashc-/exec";
-        let loggedInTruck = null;
-        let truckData = [];
-
-        // เรียก fetchData เพื่อโหลดข้อมูลทั้งหมดก่อน
-        fetchData();
-
-        function login() {
-            const password = document.getElementById("passwordInput").value;
-
-            if (!password) {
-                Swal.fire({
-                    title: "กรุณากรอกรหัสผ่าน",
-                    icon: "warning",
-                    text: "กรุณากรอกรหัสผ่านก่อนเข้าสู่ระบบ",
-                    timer: 3000,
-                    showConfirmButton: false
-                });
-                return;
-            }
-
-            // ค้นหาใน truckData ว่ามี license_plate ที่ลงท้ายด้วยค่าที่กรอกมาหรือไม่
-            const foundTruck = truckData.find(truck => {
-                // เช็คความยาวของ license_plate ก่อน
-                let lastFour = null;
-                if (truck.license_plate.length === 9) {
-                    // ถ้ามี 9 ตัว -> ตัด 2 ตัวท้าย แล้วเอา 4 ตัวหลัง
-                    lastFour = truck.license_plate.slice(0, -2).slice(-4);
-                } else if (truck.license_plate.length === 8) {
-                    // ถ้ามี 8 ตัว -> ตัด 2 ตัวท้าย แล้วเอา 4 ตัวหลัง
-                    lastFour = truck.license_plate.slice(0, -2).slice(-4);
-                }
-
-                // เปรียบเทียบกับ password
-                return lastFour === password;
-            });
-
-            if (!foundTruck) {
-                Swal.fire({
-                    title: "รหัสผ่านไม่ถูกต้อง",
-                    icon: "error",
-                    text: "ทะเบียนรถนี้ไม่มีอยู่ในระบบ กรุณาลองใหม่",
-                    timer: 3000,
-                    showConfirmButton: false
-                });
-                return;
-            }
-
-            loggedInTruck = password;
-            Swal.fire({
-                title: "เข้าสู่ระบบสำเร็จ",
-                icon: "success",
-                text: `คุณเข้าสู่ระบบด้วยทะเบียนรถ: ${foundTruck.license_plate}`,
-                timer: 3000, // ปิดอัตโนมัติใน 3 วินาที
-                showConfirmButton: false // ไม่แสดงปุ่ม OK
-            });
-
-            renderTrucks(); // โหลดข้อมูลที่กรองตามทะเบียนรถหลังจากล็อกอินสำเร็จ
-        }
-
-function fetchData() {
-    console.log("Fetching data..."); // Debug ตรวจสอบว่าทำงานหรือไม่
-    fetch(API_URL)
-        .then(response => response.json())
-        .then(data => {
-            console.log("Data fetched:", data); // Debug ตรวจสอบข้อมูลที่ดึงมา
-
-            // กรองข้อมูลที่ไม่ใช่หัวตาราง (ตัดแถวหัวข้อออก)
-            truckData = data.filter(row => row.date !== "วันที่");
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0); // ตัดเวลาทิ้งเพื่อเทียบเฉพาะวันที่
-
-            truckData = truckData.filter(item => {
-                if (!item.date) return false; // ไม่มีวันที่ ตัดออกเลย
-
-                const itemDate = new Date(item.date);
-                itemDate.setHours(0, 0, 0, 0); // ตัดเวลาทิ้งเช่นกัน
-
-                const isToday = itemDate.getTime() === today.getTime(); // เป็นวันนี้
-                const isFuture = itemDate.getTime() > today.getTime();  // เป็นวันถัดไป (อนาคต)
-                const isPast = itemDate.getTime() < today.getTime();    // เป็นวันเก่า
-
-                const isNotDelivered = item.status !== "จัดส่งแล้ว"; // วันเก่าที่ยังไม่ได้จัดส่ง
-                return isToday || isFuture || (isPast && isNotDelivered);
-            });
-
-            console.log("Filtered data:", truckData); // Debug เช็คว่าข้อมูลที่เหลืออยู่ตรงเงื่อนไขไหม
-            renderTrucks(); // ✅ เรียก renderTrucks() ให้แน่ใจว่าแสดงผลข้อมูล
-        })
-        .catch(error => console.error("❌ Error fetching data:", error));
+  document.getElementById("licenseModal").classList.add("show");
 }
 
-        // ฟังก์ชันตรวจสอบว่าวันที่ตรงกับวันปัจจุบันหรือไม่
-        function isToday(dateString) {
-            if (!dateString) return false;
-
-            // แปลงวันที่จาก API เป็นรูปแบบ Date
-            const dateFromAPI = new Date(dateString);
-            const today = new Date();
-
-            // เปรียบเทียบวัน เดือน และปี
-            return (
-                dateFromAPI.getDate() === today.getDate() &&
-                dateFromAPI.getMonth() === today.getMonth() &&
-                dateFromAPI.getFullYear() === today.getFullYear()
-            );
-        }
-
-        function updateStatus(id, newStatus) {
-            if (!id) {
-                console.error("❌ ไม่พบ ID สำหรับอัปเดตสถานะ");
-                return;
-            }
-
-            Swal.fire({
-                title: "กำลังอัปเดต...",
-                text: "รอสักครู่ กำลังอัปเดตสถานะ",
-                icon: "info",
-                showConfirmButton: false,
-                allowOutsideClick: false,
-                timer: 3000
-            });
-
-            const url = `${API_URL}?id=${id}&status=${encodeURIComponent(newStatus)}`;
-
-            setTimeout(() => {
-                fetch(url, {
-                        method: "GET"
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                        Swal.fire({
-                            title: "สำเร็จ!",
-                            text: "อัปเดตสถานะเรียบร้อยแล้ว",
-                            icon: "success",
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-                        fetchData();
-                    })
-                    .catch(error => {
-                        console.error("❌ อัปเดตสถานะผิดพลาด:", error);
-                        Swal.fire({
-                            title: "ผิดพลาด!",
-                            text: "ไม่สามารถอัปเดตสถานะได้",
-                            icon: "error"
-                        });
-                    });
-            }, 1500);
-        }
-
-function renderTrucks() {
-    const container = document.getElementById("truckData");
-    container.innerHTML = "";
-
-    const groupedByTruck = {};
-
-    truckData.forEach(item => {
-        // เช็คทะเบียนรถ
-        let lastFour = item.license_plate.length >= 4 ? item.license_plate.slice(-6, -2) : null;
-
-        // ✅ แสดงทุกคันเสมอ แม้ยังไม่ได้ล็อกอิน
-        if (loggedInTruck && lastFour !== loggedInTruck) {
-            return; // 🚫 หากล็อกอินอยู่ แต่ไม่ตรงทะเบียนที่ล็อกอิน ให้ข้าม
-        }
-
-        const key = `<span class="key-box">${item.license_plate} - เที่ยวที่ ${item.trip}</span>`;
-
-        if (!groupedByTruck[key]) groupedByTruck[key] = [];
-        groupedByTruck[key].push(item);
-    });
-
-    Object.keys(groupedByTruck).forEach(truck => {
-        const truckDiv = document.createElement("div");
-        truckDiv.classList.add("truck");
-
-        const firstItem = groupedByTruck[truck][0];
-        const diver = firstItem && firstItem.driver ? `<span class="driver-name">ชื่อผู้ขับ: ${firstItem.driver}</span>` : '';
-
-        truckDiv.innerHTML = `<h2 class="truck-header"><p class="fa-bounce">🚚</p> ${diver} ${truck}</h2><ul></ul>`;
-
-        const list = truckDiv.querySelector("ul");
-
-        groupedByTruck[truck].forEach(item => {
-            const li = document.createElement("li");
-
-            let timestamp = item.timestamp ? formatDateTime(item.timestamp) : "";
-            const timestampClass = item.status === "จัดส่งแล้ว" ? "delivered" : item.status === "กำลังจัดส่ง" ? "shipping" : "";
-
-            if (item.status === "กำลังจัดส่ง") {
-                timestamp = `<span style="color:orange; font-weight:bold;">
-                    🚚 กำลังจัดส่ง ${formatDateTime(item.timestamp)}
-                 </span>`;
-                }
-
-            let customerDisplay = item.customer;
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const itemDate = new Date(item.date);
-            itemDate.setHours(0, 0, 0, 0);
-            const isFuture = itemDate.getTime() > today.getTime();
-	    const isPast = itemDate.getTime() < today.getTime(); 
-
-if (isFuture) {
-    const futureDate = itemDate.toLocaleDateString("th-TH", {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-
-   customerDisplay += ` <span class="blink-text" style="color:green;"> คิวจัดส่งในวันที่ ${futureDate}</span>`;
-} else if (isPast && item.status !== "จัดส่งแล้ว") {
-    // ✅ เพิ่มข้อความ "จัดส่งล่าช้า" ถ้าเป็นอดีตและยังไม่จัดส่งสำเร็จ
-    customerDisplay += ` <span style="color:red;"> งานค้างส่ง </span>`;
+function closeLicenseModal() {
+  document.getElementById("licenseModal").classList.remove("show");
 }
 
- 
-            li.innerHTML = `
-                <span class="status">${customerDisplay}</span>
-                <span class="timestamp ${timestampClass}">${timestamp}</span>
-                ${loggedInTruck ? `
-                    <button class="start-btn" onclick="updateStatus('${item.id}', 'กำลังจัดส่ง')">เริ่ม</button>
-                    <button class="complete-btn" onclick="updateStatus('${item.id}', 'จัดส่งแล้ว')">จัดส่งสำเร็จ</button>
-                ` : ""}
-            `;
+async function loginSelectedLicense(license) {
+  showLoadingBox();
 
-            const startBtn = li.querySelector(".start-btn");
-            const completeBtn = li.querySelector(".complete-btn");
-            
-
-            if (startBtn) {
-                if (item.status === "กำลังจัดส่ง") {
-                    startBtn.style.display = "none";
-                } else if (item.status === "จัดส่งแล้ว") {
-                    startBtn.style.display = "none";
-                }
-            }
-
-            if (completeBtn) {
-                if (item.status === "กำลังจัดส่ง") {
-                    completeBtn.style.display = "inline-block";
-                } else if (item.status === "จัดส่งแล้ว") {
-                    completeBtn.style.display = "none";
-                }
-            }
-
-            list.appendChild(li);
-        });
-
-        container.appendChild(truckDiv);
+  try {
+    const result = await apiCall({
+      action: "loginLicense",
+      password: pendingPassword,
+      license
     });
+
+    closeLicenseModal();
+    completeLogin(result);
+  } catch (error) {
+    alert("เข้าสู่ระบบไม่สำเร็จ\n" + (error.message || error));
+  } finally {
+    hideLoadingBox();
+  }
 }
 
+function completeLogin(result) {
+  driverToken = result.token || "";
+  driverLicense = result.license || "";
+  driverNames = result.drivers || [];
+  driverViewMode = "mine";
 
+  closeLogin();
 
-        function formatDateTime(timestamp) {
-            if (!timestamp || isNaN(new Date(timestamp))) {
-                return "";
+  document.getElementById("loginButton").style.display = "none";
+  document.getElementById("driverHeader").classList.add("show");
+  document.getElementById("driverViewBar").classList.add("show");
+
+  const mainDriver = driverNames[0] || "";
+
+  document.getElementById("driverHeaderAvatar").innerHTML =
+    driverAvatarHtml(mainDriver, "header-driver-photo");
+
+  document.getElementById("driverHeaderName").textContent =
+    mainDriver || "คนขับ";
+
+  document.getElementById("driverHeaderLicense").textContent =
+    "🚚 " + driverLicense;
+
+  document.getElementById("driverViewInfo").textContent =
+    "กำลังใช้งานรถ " +
+    driverLicense +
+    " · Update ได้เฉพาะงานของรถคันนี้";
+
+  updateViewButtons();
+  render();
+}
+
+async function logoutDriver() {
+  if (!confirm("ต้องการออกจากระบบคนขับ?")) return;
+
+  const token = driverToken;
+
+  driverToken = "";
+  driverLicense = "";
+  driverNames = [];
+  driverViewMode = "all";
+
+  document.getElementById("loginButton").style.display = "inline-block";
+  document.getElementById("driverHeader").classList.remove("show");
+  document.getElementById("driverViewBar").classList.remove("show");
+
+  render();
+
+  if (token) {
+    try {
+      await apiCall({ action: "logout", token });
+    } catch (_) {}
+  }
+}
+
+/* ---------------- VIEW MODE ---------------- */
+
+function setViewMode(mode) {
+  driverViewMode = mode;
+  updateViewButtons();
+  render();
+}
+
+function updateViewButtons() {
+  document.getElementById("viewMineBtn").classList.toggle(
+    "active",
+    driverViewMode === "mine"
+  );
+
+  document.getElementById("viewAllBtn").classList.toggle(
+    "active",
+    driverViewMode === "all"
+  );
+}
+
+/* ---------------- DATE ---------------- */
+
+function setDateMode(mode, button) {
+  dateMode = mode;
+  selectedDate = "";
+
+  document.getElementById("selectedDate").value = "";
+
+  document.querySelectorAll(".date-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  button.classList.add("active");
+  loadData(true);
+}
+
+function loadSelectedDate() {
+  const value = document.getElementById("selectedDate").value;
+
+  if (!value) {
+    alert("กรุณาเลือกวันที่");
+    return;
+  }
+
+  dateMode = "date";
+  selectedDate = value;
+
+  document.querySelectorAll(".date-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  loadData(true);
+}
+
+function backCurrent() {
+  dateMode = "current";
+  selectedDate = "";
+
+  document.getElementById("selectedDate").value = "";
+
+  document.querySelectorAll(".date-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  document.getElementById("dateCurrent").classList.add("active");
+  loadData(true);
+}
+
+function updateHistory() {
+  const box = document.getElementById("historyAlert");
+  const text = document.getElementById("historyText");
+
+  if (dateMode === "current") {
+    box.classList.remove("show");
+    return;
+  }
+
+  let label = "";
+
+  if (dateMode === "today") label = "วันนี้";
+  else if (dateMode === "tomorrow") label = "พรุ่งนี้";
+  else if (dateMode === "7days") label = "7 วันข้างหน้า";
+  else if (dateMode === "date") label = formatInputDate(selectedDate);
+
+  text.textContent = "📅 กำลังดูข้อมูล: " + label;
+  box.classList.add("show");
+}
+
+/* ---------------- STATUS ---------------- */
+
+function getStatus(row) {
+  const text = String(row.status || "").trim();
+
+  if (text.includes("จัดส่งแล้ว") || text.includes("สำเร็จ")) {
+    return "done";
+  }
+
+  if (text.includes("กำลังจัดส่ง")) {
+    return "shipping";
+  }
+
+  if (isLate(row)) {
+    return "late";
+  }
+
+  return "pending";
+}
+
+function isLate(row) {
+  const text = String(row.status || "");
+
+  if (text.includes("จัดส่งแล้ว") || text.includes("สำเร็จ")) {
+    return false;
+  }
+
+  const date = parseDisplayDate(row.date);
+  if (!date) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
+
+  return date < today;
+}
+
+function setStatusFilter(mode, button) {
+  statusFilter = mode;
+
+  document.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  button.classList.add("active");
+  render();
+}
+
+/* ---------------- MY TRUCK ---------------- */
+
+function normalizePlate(value) {
+  return String(value || "").replace(/\s+/g, "").toLowerCase();
+}
+
+function isMyTruck(row) {
+  if (!driverToken || !driverLicense) return false;
+
+  return normalizePlate(row.license) === normalizePlate(driverLicense);
+}
+
+/* ---------------- RENDER ---------------- */
+
+function render() {
+  const searchElement = document.getElementById("searchInput");
+  if (!searchElement) return;
+
+  const search = searchElement.value.toLowerCase().trim();
+
+  const viewRows = allRows.filter(row => {
+    if (
+      driverToken &&
+      driverViewMode === "mine" &&
+      !isMyTruck(row)
+    ) {
+      return false;
+    }
+
+    const status = getStatus(row);
+
+    if (statusFilter !== "all" && status !== statusFilter) {
+      return false;
+    }
+
+    if (!search) return true;
+
+    const text = [
+      row.driver,
+      row.license,
+      row.customer,
+      row.customerCode,
+      row.trip,
+      row.note
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    return text.includes(search);
+  });
+
+  updateStats(viewRows);
+
+  const groups = {};
+
+  viewRows.forEach(row => {
+    const key = [
+      row.license || "-",
+      row.trip || "-",
+      row.date || "-"
+    ].join("|");
+
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(row);
+  });
+
+  const container = document.getElementById("truckContainer");
+  container.innerHTML = "";
+
+  const keys = Object.keys(groups);
+
+  document.getElementById("resultCount").textContent =
+    keys.length + " เที่ยว · " + viewRows.length + " จุดจัดส่ง";
+
+  if (!keys.length) {
+    container.innerHTML =
+      `<div class="empty">ไม่พบงานตามเงื่อนไขที่เลือก</div>`;
+    return;
+  }
+
+  keys.forEach(key => {
+    const rows = groups[key];
+    const first = rows[0];
+    const mine = isMyTruck(first);
+
+    const done = rows.filter(row => getStatus(row) === "done").length;
+    const percent = rows.length
+      ? Math.round((done / rows.length) * 100)
+      : 0;
+
+    const card = document.createElement("div");
+    card.className = "truck-card" + (mine ? " my-truck" : "");
+
+    const avatar = driverAvatarHtml(first.driver);
+
+    card.innerHTML = `
+      <div class="truck-head">
+        <div>
+          <div class="license">
+            🚚 ${escapeHtml(first.license || "ไม่ระบุทะเบียน")}
+            ${
+              mine
+                ? `<span class="my-badge">รถของฉัน</span>`
+                : ""
             }
+          </div>
 
-            const date = new Date(timestamp);  
-            const year = date.getFullYear();   
-            const month = String(date.getMonth() + 1).padStart(2, '0');  
-            const day = String(date.getDate()).padStart(2, '0');  
+          <div class="driver-line">
+            ${avatar}
 
-            const hours = String(date.getHours()).padStart(2, '0');   
-            const minutes = String(date.getMinutes()).padStart(2, '0');  
-            const seconds = String(date.getSeconds()).padStart(2, '0');  
+            <div class="driver-meta">
+              <div class="driver-name-text">
+                ${escapeHtml(first.driver || "-")}
+              </div>
 
-            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;  
-        }
+              <div class="driver-date">
+                📅 ${escapeHtml(first.date || "-")}
+              </div>
+            </div>
+          </div>
+        </div>
 
+        <div class="trip-badge">
+          เที่ยวที่ ${escapeHtml(first.trip || "-")}
+        </div>
+      </div>
 
-        // โหลดข้อมูลครั้งแรก
-    fetchData();
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>ส่งแล้ว ${done} / ${rows.length} จุด</span>
+          <span>${percent}%</span>
+        </div>
 
-    // อัปเดตข้อมูลอัตโนมัติทุก 15 วินาที
-    setInterval(fetchData, 15000);
-    </script>
+        <div class="progress">
+          <div
+            class="progress-bar"
+            style="width:${percent}%"
+          ></div>
+        </div>
+      </div>
+
+      <div class="customer-list">
+        ${rows.map(renderCustomerRow).join("")}
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+function renderCustomerRow(row) {
+  const status = getStatus(row);
+  const mine = isMyTruck(row);
+  const canUpdate = Boolean(driverToken && mine);
+
+  const label = {
+    done: "✅ จัดส่งสำเร็จ",
+    shipping: "🚚 กำลังจัดส่ง",
+    late: "⚠️ งานค้าง",
+    pending: "รอจัดส่ง"
+  }[status];
+
+  let fixedMap = "";
+
+  if (row.mapLink) {
+    fixedMap = `
+      <div class="fixed-map-area">
+        <button
+          class="map-btn-fixed"
+          onclick="openMap('${escapeJs(row.mapLink)}')"
+        >
+          📍 แผนที่
+        </button>
+      </div>
+    `;
+  }
+
+  let moving = "";
+
+  if (status === "shipping") {
+    moving = `
+      <div class="delivery-motion-area">
+        <div class="moving-delivery-status">
+          <span class="moving-truck-icon">🚚</span>
+          <span class="moving-shipping-text">กำลังจัดส่ง</span>
+        </div>
+      </div>
+    `;
+  }
+
+  /* v2.6: map + moving status stay on the customer-name line */
+  const headingExtras = `${fixedMap}${moving}`;
+
+  let actions = "";
+
+  if (canUpdate) {
+    if (status === "pending" || status === "late") {
+      actions = `
+        <button
+          class="action-btn start-btn"
+          onclick="updateStatus(${row.rowNumber}, 'กำลังจัดส่ง')"
+        >
+          🚚 เริ่มจัดส่ง
+        </button>
+      `;
+    } else if (status === "shipping") {
+      actions = `
+        <button
+          class="action-btn complete-btn"
+          onclick="updateStatus(${row.rowNumber}, 'จัดส่งแล้ว')"
+        >
+          ✅ จัดส่งสำเร็จ
+        </button>
+      `;
+    }
+  }
+
+  let permission = "";
+
+  if (!driverToken && status !== "done") {
+    permission = `
+      <span class="no-permission">
+        🔒 Login เพื่อ Update
+      </span>
+    `;
+  }
+
+  let time = "";
+
+  if (
+    row.deliveryTime &&
+    (status === "done" || status === "shipping")
+  ) {
+    time = `
+      <div class="${
+        status === "done" ? "complete-time" : "delivery-time"
+      }">
+        ${escapeHtml(row.deliveryTime)}
+      </div>
+    `;
+  }
+
+  return `
+    <div
+      class="customer-row ${
+        status === "shipping" ? "current-delivery" : ""
+      }"
+    >
+      <div class="customer-top">
+
+        <div class="customer-main">
+          <span class="status-dot ${status}"></span>
+
+          <div style="width:100%;min-width:0;">
+            <div class="customer-heading-line">
+              <div class="customer-name">
+                ${escapeHtml(row.customer || "-")}
+              </div>
+
+              ${headingExtras}
+            </div>
+
+            <div class="customer-code">
+              ${escapeHtml(row.customerCode || "")}
+              ${
+                row.note
+                  ? " · " + escapeHtml(row.note)
+                  : ""
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="customer-right">
+          <span class="badge ${status}">
+            ${label}
+          </span>
+
+          ${time}
+
+          <div class="actions">
+            ${actions}
+            ${permission}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+/* ---------------- STATS ---------------- */
+
+function updateStats(rows) {
+  const total = rows.length;
+  const shipping = rows.filter(r => getStatus(r) === "shipping").length;
+  const done = rows.filter(r => getStatus(r) === "done").length;
+  const late = rows.filter(r => getStatus(r) === "late").length;
+  const pending = rows.filter(r => getStatus(r) === "pending").length;
+
+  document.getElementById("statTotal").textContent = total;
+  document.getElementById("statShipping").textContent = shipping;
+  document.getElementById("statDone").textContent = done;
+  document.getElementById("statLate").textContent = late;
+  document.getElementById("statPending").textContent = pending;
+}
+
+/* ---------------- UPDATE ---------------- */
+
+async function updateStatus(rowNumber, status) {
+  if (!driverToken) {
+    alert("กรุณา Login คนขับก่อน Update");
+    return;
+  }
+
+  const message =
+    status === "จัดส่งแล้ว"
+      ? "ยืนยันว่าจัดส่งสินค้าเรียบร้อยแล้ว?"
+      : "ยืนยันเริ่มจัดส่งรายการนี้?";
+
+  if (!confirm(message)) return;
+
+  showLoadingBox();
+
+  try {
+    await apiCall({
+      action: "update",
+      rowNumber,
+      status,
+      token: driverToken
+    });
+
+    await loadData(false);
+  } catch (error) {
+    if (
+      String(error.message || error).includes("Session")
+    ) {
+      forceLogoutUI();
+    }
+
+    alert("Update ไม่สำเร็จ\n" + (error.message || error));
+  } finally {
+    hideLoadingBox();
+  }
+}
+
+function forceLogoutUI() {
+  driverToken = "";
+  driverLicense = "";
+  driverNames = [];
+  driverViewMode = "all";
+
+  document.getElementById("loginButton").style.display = "inline-block";
+  document.getElementById("driverHeader").classList.remove("show");
+  document.getElementById("driverViewBar").classList.remove("show");
+
+  render();
+}
+
+/* ---------------- MAP ---------------- */
+
+function openMap(url) {
+  if (!url) return;
+  window.open(url, "_blank", "noopener");
+}
+
+/* ---------------- DATE UTIL ---------------- */
+
+function parseDisplayDate(value) {
+  if (!value) return null;
+
+  const text = String(value).trim();
+
+  let match = text.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})/
+  );
+
+  if (match) {
+    let year = Number(match[3]);
+    if (year > 2400) year -= 543;
+
+    /* Sheet display is M/d/yyyy in the current system */
+    return new Date(
+      year,
+      Number(match[1]) - 1,
+      Number(match[2])
+    );
+  }
+
+  const date = new Date(text);
+  return isNaN(date.getTime()) ? null : date;
+}
+
+function formatInputDate(value) {
+  if (!value) return "";
+
+  const parts = value.split("-");
+  if (parts.length !== 3) return value;
+
+  return parts[2] + "/" + parts[1] + "/" + parts[0];
+}
+
+/* ---------------- ESCAPE ---------------- */
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value);
+}
+
+function escapeJs(value) {
+  return String(value || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/\r?\n/g, "");
+}
+
+/* ---------------- LOADING ---------------- */
+
+function showLoadingBox() {
+  document.getElementById("loading").classList.add("show");
+}
+
+function hideLoadingBox() {
+  document.getElementById("loading").classList.remove("show");
+}
+
+/* ---------------- START ---------------- */
+
+driverViewMode = "all";
+
+loadDriverImages();
+loadData(true);
+
+setInterval(() => {
+  loadData(false);
+}, 15000);
+</script>
+
 
 </body>
 
