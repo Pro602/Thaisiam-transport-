@@ -5845,6 +5845,14 @@ keys.forEach(
 
 }
 
+
+function customerNameSizeClass(name) {
+  const len = String(name || '').trim().length;
+  if (len >= 58) return 'very-long-name';
+  if (len >= 38) return 'long-name';
+  return '';
+}
+
 function renderCustomerRow(
   row
 ) {
