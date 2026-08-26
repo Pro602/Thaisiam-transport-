@@ -4298,6 +4298,49 @@ body {
   }
 }
 
+
+/* =========================================================
+   v3.2 MOBILE SYNC + STABLE CONNECTIVITY
+========================================================= */
+
+.online-box.reconnecting {
+  background: rgba(245, 158, 11, .18);
+}
+
+.online-box.offline {
+  background: rgba(220, 38, 38, .18);
+}
+
+.online-dot.reconnecting {
+  background: #f59e0b;
+  box-shadow: 0 0 0 4px rgba(245,158,11,.14);
+}
+
+.online-dot.offline {
+  background: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239,68,68,.14);
+}
+
+/* keep tested Apps Script mobile layout as source of truth */
+@media (max-width:650px) {
+  html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .main {
+    width: 100%;
+  }
+
+  .truck-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .truck-card {
+    width: 100%;
+  }
+}
+
 </style>
 
 </head>
@@ -4790,7 +4833,7 @@ ONLINE ·
 
 <button
   class="refresh-btn"
-  onclick="loadData(true)"
+  onclick="loadData(true,true)"
 >
 🔄 Refresh
 </button>
@@ -5018,6 +5061,45 @@ let driverNames = [];
 let driverViewMode = "all";
 let pendingPassword = "";
 
+
+let consecutiveRefreshFailures = 0;
+
+function setConnectionState(state) {
+  const box = document.querySelector('.online-box');
+  const dot = document.querySelector('.online-dot');
+  const text = document.getElementById('updatedAt');
+
+  if (!box || !dot || !text) return;
+
+  box.classList.remove('reconnecting', 'offline');
+  dot.classList.remove('reconnecting', 'offline');
+
+  if (state === 'online') {
+    text.textContent =
+      new Date().toLocaleTimeString(
+        'th-TH',
+        {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }
+      );
+    return;
+  }
+
+  if (state === 'reconnecting') {
+    box.classList.add('reconnecting');
+    dot.classList.add('reconnecting');
+    text.textContent = 'กำลังเชื่อมต่อใหม่...';
+    return;
+  }
+
+  box.classList.add('offline');
+  dot.classList.add('offline');
+  text.textContent = 'OFFLINE';
+}
+
+
 /* ---------------- API ---------------- */
 
 async function apiCall(params = {}) {
@@ -5096,7 +5178,7 @@ function driverAvatarHtml(name, className = "driver-avatar") {
 
 /* ---------------- LOAD DATA ---------------- */
 
-async function loadData(showLoading = false) {
+async async function loadData(showLoading = false, manualRequest = false) {
   if (showLoading) showLoadingBox();
 
   try {
@@ -5107,18 +5189,40 @@ async function loadData(showLoading = false) {
     });
 
     allRows = data.rows || [];
-
-    document.getElementById("updatedAt").textContent =
-      new Date().toLocaleTimeString("th-TH", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
-      });
+    consecutiveRefreshFailures = 0;
+    setConnectionState('online');
 
     updateHistory();
     render();
+
   } catch (error) {
-    alert("โหลดข้อมูลไม่สำเร็จ\n" + (error.message || error));
+    consecutiveRefreshFailures += 1;
+
+    if (consecutiveRefreshFailures < 3) {
+      setConnectionState('reconnecting');
+    } else {
+      setConnectionState('offline');
+    }
+
+    /*
+      Auto Refresh:
+      - keep last successful data on screen
+      - no popup
+      Manual request:
+      - show error to user
+    */
+    if (manualRequest) {
+      alert(
+        'โหลดข้อมูลไม่สำเร็จ\n' +
+        (error.message || error)
+      );
+    } else {
+      console.warn(
+        'Auto refresh failed:',
+        error
+      );
+    }
+
   } finally {
     hideLoadingBox();
   }
@@ -5321,7 +5425,7 @@ function setDateMode(mode, button) {
   });
 
   button.classList.add("active");
-  loadData(true);
+  loadData(true, true);
 }
 
 function loadSelectedDate() {
@@ -5339,7 +5443,7 @@ function loadSelectedDate() {
     btn.classList.remove("active");
   });
 
-  loadData(true);
+  loadData(true, true);
 }
 
 function backCurrent() {
@@ -5353,7 +5457,7 @@ function backCurrent() {
   });
 
   document.getElementById("dateCurrent").classList.add("active");
-  loadData(true);
+  loadData(true, true);
 }
 
 function updateHistory() {
@@ -6426,7 +6530,7 @@ async function updateStatus(rowNumber, status) {
       token: driverToken
     });
 
-    await loadData(false);
+    await loadData(false, false);
   } catch (error) {
     if (
       String(error.message || error).includes("Session")
@@ -6533,10 +6637,10 @@ function hideLoadingBox() {
 driverViewMode = "all";
 
 loadDriverImages();
-loadData(true);
+loadData(true, false);
 
 setInterval(() => {
-  loadData(false);
+  loadData(false, false);
 }, 15000);
 </script>
 
