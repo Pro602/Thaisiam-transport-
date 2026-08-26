@@ -923,7 +923,7 @@ input {
 
   grid-template-columns:
     repeat(
-      5,
+      6,
       minmax(
         130px,
         1fr
@@ -1016,6 +1016,35 @@ input {
 .stat.pending::before {
   background:
     #718096;
+}
+
+.stat.amount::before {
+  background:
+    #7c3aed;
+}
+
+.stat-money-value {
+  font-size: 23px;
+  white-space: nowrap;
+}
+
+.trip-total-value {
+  margin-top: 6px;
+  padding: 5px 9px;
+  border-radius: 10px;
+  background: #f5f3ff;
+  color: #6d28d9;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.bill-inline {
+  margin-left: 14px;
+  color: #0f766e;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 
@@ -3855,6 +3884,420 @@ body {
   }
 }
 
+
+/* v2.7 bill value responsive */
+@media(max-width:650px) {
+  .stat-money-value {
+    font-size: 20px;
+  }
+  .trip-total-value {
+    font-size: 12px;
+    margin-top: 5px;
+  }
+  .customer-code {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .bill-inline {
+    margin-left: 0;
+    font-size: 12px;
+  }
+}
+
+
+
+/* =========================================================
+   v2.8 BALANCED SUMMARY + FIXED SHIPPING LANE
+========================================================= */
+
+/* 6 summary cards: label on top, value underneath */
+.stats{
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:12px;
+}
+.stat{
+  min-height:92px;
+  padding:15px 16px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:8px;
+}
+.stat-label{
+  width:100%;
+  font-size:13px;
+  font-weight:700;
+  line-height:1.25;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.stat-value{
+  width:100%;
+  font-size:30px;
+  line-height:1;
+  font-weight:900;
+  margin:0;
+  text-align:left;
+  white-space:nowrap;
+}
+.stat-money-value{
+  font-size:27px;
+  letter-spacing:-.3px;
+}
+
+/* Customer title + map stay together */
+.customer-heading-line{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+  width:100%;
+  flex-wrap:wrap;
+}
+.customer-heading-line .customer-name{
+  min-width:0;
+}
+.customer-heading-line .fixed-map-area{
+  display:inline-flex;
+  align-items:center;
+  flex:0 0 auto;
+}
+
+/* When shipping, reserve a dedicated lane on the SAME top row.
+   Long customer names cannot push the truck animation down. */
+.customer-top.shipping-layout{
+  grid-template-columns:minmax(0,1fr) minmax(165px,220px) auto;
+  align-items:start;
+  column-gap:12px;
+}
+.shipping-lane-fixed{
+  position:relative;
+  height:38px;
+  min-width:0;
+  overflow:hidden;
+  align-self:start;
+  margin-top:0;
+}
+.shipping-lane-fixed .moving-delivery-status{
+  top:4px;
+  left:100%;
+}
+
+/* no moving lane inside customer-heading-line anymore */
+.customer-heading-line .delivery-motion-area{
+  display:none !important;
+}
+
+/* code + bill stay compact on one line when space allows */
+.customer-code{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+  margin-top:5px;
+}
+.bill-inline{
+  margin-left:0;
+  white-space:nowrap;
+}
+
+@media(max-width:1200px){
+  .stats{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  .customer-top.shipping-layout{
+    grid-template-columns:minmax(0,1fr) minmax(155px,190px) auto;
+  }
+}
+
+@media(max-width:650px){
+  .stats{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+  .stat{
+    min-height:76px;
+    padding:12px 13px;
+    gap:6px;
+  }
+  .stat-label{
+    font-size:12px;
+    white-space:normal;
+    overflow:visible;
+    text-overflow:clip;
+  }
+  .stat-value{
+    font-size:26px;
+  }
+  .stat-money-value{
+    font-size:21px;
+  }
+
+  /* On phones, give the animation its own compact row for readability. */
+  .customer-top.shipping-layout{
+    display:grid;
+    grid-template-columns:1fr auto;
+    grid-template-areas:
+      "main right"
+      "lane lane";
+    row-gap:6px;
+  }
+  .customer-top.shipping-layout .customer-main{
+    grid-area:main;
+  }
+  .customer-top.shipping-layout .shipping-lane-fixed{
+    grid-area:lane;
+    height:42px;
+    margin-left:23px;
+  }
+  .customer-top.shipping-layout .customer-right{
+    grid-area:right;
+    margin-left:0;
+    margin-top:0;
+  }
+  .customer-code{
+    gap:10px;
+  }
+}
+
+
+
+/* =========================================================
+   v2.9 SINGLE-ROW SHIPPING LAYOUT
+   - ชื่อลูกค้าไม่ดัน 🚚 กำลังจัดส่ง ลงบรรทัดใหม่
+   - ปรับขนาดชื่อแบบควบคุมตามความยาว
+   - ชื่อยาวเกินพื้นที่ใช้ ... แต่ดูชื่อเต็มได้ด้วย title
+========================================================= */
+
+/* Desktop: name + map must stay on the same line */
+.customer-heading-line{
+  display:flex !important;
+  align-items:center;
+  flex-wrap:nowrap !important;
+  gap:8px;
+  width:100%;
+  min-width:0;
+  overflow:hidden;
+}
+
+.customer-heading-line .customer-name{
+  flex:1 1 auto;
+  min-width:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:17px;
+  line-height:1.35;
+}
+
+/* Auto but controlled: shrink only a little for unusually long names */
+.customer-heading-line .customer-name.long-name{
+  font-size:15.5px;
+  letter-spacing:-0.1px;
+}
+.customer-heading-line .customer-name.very-long-name{
+  font-size:14.5px;
+  letter-spacing:-0.2px;
+}
+
+.customer-heading-line .fixed-map-area{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+}
+
+/* Shipping row = customer | moving truck | status, never a second row */
+.customer-top.shipping-layout{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) 190px 150px;
+  grid-template-areas:"main lane right";
+  align-items:start;
+  column-gap:10px;
+  row-gap:0 !important;
+}
+.customer-top.shipping-layout .customer-main{
+  grid-area:main;
+  min-width:0;
+}
+.customer-top.shipping-layout .shipping-lane-fixed{
+  grid-area:lane;
+  width:100%;
+  height:38px;
+  min-width:0;
+  margin:0 !important;
+  overflow:hidden;
+  align-self:start;
+}
+.customer-top.shipping-layout .customer-right{
+  grid-area:right;
+  min-width:0;
+  margin:0 !important;
+  align-items:flex-end;
+}
+.customer-top.shipping-layout .delivery-motion-area{
+  display:block !important;
+  width:100%;
+  height:38px;
+  min-width:0;
+  margin:0 !important;
+  overflow:hidden;
+}
+.customer-top.shipping-layout .moving-delivery-status{
+  top:4px;
+}
+
+/* Customer code + bill remain one compact line */
+.customer-code{
+  display:flex;
+  align-items:center;
+  flex-wrap:nowrap;
+  gap:14px;
+  min-width:0;
+  white-space:nowrap;
+}
+.customer-code .bill-inline{
+  flex:0 0 auto;
+  white-space:nowrap;
+}
+
+@media (max-width:1200px) and (min-width:651px){
+  .customer-top.shipping-layout{
+    grid-template-columns:minmax(0,1fr) 155px 138px;
+  }
+  .customer-heading-line .customer-name{
+    font-size:16px;
+  }
+  .customer-heading-line .customer-name.long-name{
+    font-size:14.8px;
+  }
+  .customer-heading-line .customer-name.very-long-name{
+    font-size:14px;
+  }
+}
+
+/* Mobile: keep readability; truck gets a compact line because screen is genuinely narrow */
+@media (max-width:650px){
+  .customer-heading-line{
+    flex-wrap:nowrap !important;
+  }
+  .customer-heading-line .customer-name{
+    font-size:17px;
+  }
+  .customer-heading-line .customer-name.long-name,
+  .customer-heading-line .customer-name.very-long-name{
+    font-size:15.5px;
+  }
+
+  .customer-top.shipping-layout{
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:
+      "main right"
+      "lane lane";
+    row-gap:4px !important;
+  }
+  .customer-top.shipping-layout .shipping-lane-fixed{
+    margin-left:23px !important;
+    width:calc(100% - 23px);
+    height:38px;
+  }
+  .customer-code{
+    flex-wrap:wrap;
+    gap:8px 12px;
+  }
+}
+
+
+/* =========================================================
+   v2.10 TRIP VALUE EMPHASIS
+   - Keep truck header card height unchanged
+   - Enlarge trip total value using existing right-side space
+========================================================= */
+
+.trip-badge {
+  min-width: 150px;
+  height: 34px;
+  padding: 7px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.trip-total-value {
+  margin-top: 5px;
+  min-width: 150px;
+  height: 34px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+
+  border-radius: 11px;
+  background:
+    linear-gradient(
+      135deg,
+      #f5f3ff,
+      #ede9fe
+    );
+  border: 1px solid #ddd6fe;
+
+  color: #6d28d9;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  text-align: center;
+  letter-spacing: .1px;
+}
+
+/* Prevent the right-side trip group from increasing header height */
+.trip-summary-stack {
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Mobile: keep readable without making card too tall */
+@media (max-width:650px) {
+  .trip-badge,
+  .trip-total-value,
+  .trip-summary-stack {
+    min-width: 132px;
+  }
+
+  .trip-badge,
+  .trip-total-value {
+    height: 32px;
+  }
+
+  .trip-total-value {
+    font-size: 13px;
+    padding: 5px 9px;
+  }
+}
+
+@media (max-width:390px) {
+  .trip-badge,
+  .trip-total-value,
+  .trip-summary-stack {
+    min-width: 118px;
+  }
+
+  .trip-total-value {
+    font-size: 12px;
+  }
+}
+
 </style>
 
 </head>
@@ -4240,6 +4683,22 @@ ONLINE ·
   class="stat-value"
 >
 0
+</div>
+
+</div>
+
+
+<div class="stat amount">
+
+<div class="stat-label">
+💰 มูลค่าสินค้ารวม
+</div>
+
+<div
+  id="statAmount"
+  class="stat-value stat-money-value"
+>
+0.00
 </div>
 
 </div>
@@ -4980,296 +5439,958 @@ function isMyTruck(row) {
 /* ---------------- RENDER ---------------- */
 
 function render() {
-  const searchElement = document.getElementById("searchInput");
-  if (!searchElement) return;
 
-  const search = searchElement.value.toLowerCase().trim();
 
-  const viewRows = allRows.filter(row => {
-    if (
-      driverToken &&
-      driverViewMode === "mine" &&
-      !isMyTruck(row)
-    ) {
-      return false;
-    }
+const search =
+  document
+    .getElementById(
+      'searchInput'
+    )
+    .value
+    .toLowerCase()
+    .trim();
 
-    const status = getStatus(row);
 
-    if (statusFilter !== "all" && status !== statusFilter) {
-      return false;
-    }
+const viewRows =
+  allRows.filter(
+    row => {
 
-    if (!search) return true;
 
-    const text = [
-      row.driver,
-      row.license,
-      row.customer,
-      row.customerCode,
-      row.trip,
-      row.note
-    ]
-      .join(" ")
+      if (
+        driverToken &&
+        driverViewMode ===
+        'mine' &&
+        !isMyTruck(row)
+      ) {
+
+        return false;
+
+      }
+
+
+      const status =
+        getStatus(row);
+
+
+      if (
+        statusFilter !==
+        'all' &&
+        status !==
+        statusFilter
+      ) {
+
+        return false;
+
+      }
+
+
+      if (!search) {
+
+        return true;
+
+      }
+
+
+      const text = [
+
+        row.driver,
+
+        row.license,
+
+        row.customer,
+
+        row.customerCode,
+
+        row.trip,
+
+        row.note
+
+      ]
+      .join(' ')
       .toLowerCase();
 
-    return text.includes(search);
-  });
 
-  updateStats(viewRows);
+      return text.includes(
+        search
+      );
 
-  const groups = {};
+    }
+  );
 
-  viewRows.forEach(row => {
+
+updateStats(
+  viewRows
+);
+
+
+const groups =
+  {};
+
+
+viewRows.forEach(
+  row => {
+
+
     const key = [
-      row.license || "-",
-      row.trip || "-",
-      row.date || "-"
-    ].join("|");
 
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(row);
-  });
+      row.license || '-',
 
-  const container = document.getElementById("truckContainer");
-  container.innerHTML = "";
+      row.trip || '-',
 
-  const keys = Object.keys(groups);
+      row.date || '-'
 
-  document.getElementById("resultCount").textContent =
-    keys.length + " เที่ยว · " + viewRows.length + " จุดจัดส่ง";
+    ]
+    .join('|');
 
-  if (!keys.length) {
-    container.innerHTML =
-      `<div class="empty">ไม่พบงานตามเงื่อนไขที่เลือก</div>`;
-    return;
+
+    if (!groups[key]) {
+
+      groups[key] =
+        [];
+
+    }
+
+
+    groups[key]
+      .push(
+        row
+      );
+
   }
+);
 
-  keys.forEach(key => {
-    const rows = groups[key];
-    const first = rows[0];
-    const mine = isMyTruck(first);
 
-    const done = rows.filter(row => getStatus(row) === "done").length;
-    const percent = rows.length
-      ? Math.round((done / rows.length) * 100)
-      : 0;
+const container =
+  document
+    .getElementById(
+      'truckContainer'
+    );
 
-    const card = document.createElement("div");
-    card.className = "truck-card" + (mine ? " my-truck" : "");
 
-    const avatar = driverAvatarHtml(first.driver);
+container.innerHTML =
+  '';
 
-    card.innerHTML = `
-      <div class="truck-head">
-        <div>
-          <div class="license">
-            🚚 ${escapeHtml(first.license || "ไม่ระบุทะเบียน")}
-            ${
-              mine
-                ? `<span class="my-badge">รถของฉัน</span>`
-                : ""
-            }
-          </div>
 
-          <div class="driver-line">
-            ${avatar}
+const keys =
+  Object.keys(
+    groups
+  );
 
-            <div class="driver-meta">
-              <div class="driver-name-text">
-                ${escapeHtml(first.driver || "-")}
-              </div>
 
-              <div class="driver-date">
-                📅 ${escapeHtml(first.date || "-")}
-              </div>
-            </div>
-          </div>
-        </div>
+document
+  .getElementById(
+    'resultCount'
+  )
+  .textContent =
+    keys.length +
+    ' เที่ยว · ' +
+    viewRows.length +
+    ' จุดจัดส่ง';
 
-        <div class="trip-badge">
-          เที่ยวที่ ${escapeHtml(first.trip || "-")}
-        </div>
-      </div>
 
-      <div class="progress-wrap">
-        <div class="progress-label">
-          <span>ส่งแล้ว ${done} / ${rows.length} จุด</span>
-          <span>${percent}%</span>
-        </div>
+if (
+  !keys.length
+) {
 
-        <div class="progress">
-          <div
-            class="progress-bar"
-            style="width:${percent}%"
-          ></div>
-        </div>
-      </div>
 
-      <div class="customer-list">
-        ${rows.map(renderCustomerRow).join("")}
-      </div>
+  container.innerHTML =
+    `
+
+    <div class="empty">
+
+    ไม่พบงานตามเงื่อนไขที่เลือก
+
+    </div>
+
     `;
 
-    container.appendChild(card);
-  });
+
+  return;
+
 }
 
-function renderCustomerRow(row) {
-  const status = getStatus(row);
-  const mine = isMyTruck(row);
-  const canUpdate = Boolean(driverToken && mine);
 
-  const label = {
-    done: "✅ จัดส่งสำเร็จ",
-    shipping: "🚚 กำลังจัดส่ง",
-    late: "⚠️ งานค้าง",
-    pending: "รอจัดส่ง"
-  }[status];
+keys.forEach(
+  key => {
 
-  let fixedMap = "";
 
-  if (row.mapLink) {
-    fixedMap = `
-      <div class="fixed-map-area">
-        <button
-          class="map-btn-fixed"
-          onclick="openMap('${escapeJs(row.mapLink)}')"
-        >
-          📍 แผนที่
-        </button>
-      </div>
-    `;
-  }
+    const rows =
+      groups[key];
 
-  let moving = "";
 
-  if (status === "shipping") {
-    moving = `
-      <div class="delivery-motion-area">
-        <div class="moving-delivery-status">
-          <span class="moving-truck-icon">🚚</span>
-          <span class="moving-shipping-text">กำลังจัดส่ง</span>
-        </div>
-      </div>
-    `;
-  }
+    const first =
+      rows[0];
 
-  /* v2.6: map + moving status stay on the customer-name line */
-  const headingExtras = `${fixedMap}${moving}`;
 
-  let actions = "";
+    const mine =
+      isMyTruck(
+        first
+      );
 
-  if (canUpdate) {
-    if (status === "pending" || status === "late") {
-      actions = `
-        <button
-          class="action-btn start-btn"
-          onclick="updateStatus(${row.rowNumber}, 'กำลังจัดส่ง')"
-        >
-          🚚 เริ่มจัดส่ง
-        </button>
-      `;
-    } else if (status === "shipping") {
-      actions = `
-        <button
-          class="action-btn complete-btn"
-          onclick="updateStatus(${row.rowNumber}, 'จัดส่งแล้ว')"
-        >
-          ✅ จัดส่งสำเร็จ
-        </button>
-      `;
-    }
-  }
 
-  let permission = "";
+    const done =
+      rows.filter(
+        row =>
+          getStatus(row) ===
+          'done'
+      )
+      .length;
 
-  if (!driverToken && status !== "done") {
-    permission = `
-      <span class="no-permission">
-        🔒 Login เพื่อ Update
-      </span>
-    `;
-  }
 
-  let time = "";
+    const percent =
+      rows.length
 
-  if (
-    row.deliveryTime &&
-    (status === "done" || status === "shipping")
-  ) {
-    time = `
-      <div class="${
-        status === "done" ? "complete-time" : "delivery-time"
-      }">
-        ${escapeHtml(row.deliveryTime)}
-      </div>
-    `;
-  }
+      ?
 
-  return `
-    <div
-      class="customer-row ${
-        status === "shipping" ? "current-delivery" : ""
-      }"
-    >
-      <div class="customer-top">
+      Math.round(
+        done /
+        rows.length *
+        100
+      )
 
-        <div class="customer-main">
-          <span class="status-dot ${status}"></span>
+      :
 
-          <div style="width:100%;min-width:0;">
-            <div class="customer-heading-line">
-              <div class="customer-name">
-                ${escapeHtml(row.customer || "-")}
+      0;
+
+
+    const tripAmount =
+      rows.reduce(
+        (sum, row) =>
+          sum + getBillAmount(row),
+        0
+      );
+
+
+    const card =
+      document.createElement(
+        'div'
+      );
+
+
+    card.className =
+      'truck-card' +
+      (
+        mine
+        ?
+        ' my-truck'
+        :
+        ''
+      );
+
+
+    const avatar =
+      driverAvatarHtml(
+        first.driver
+      );
+
+
+    card.innerHTML =
+      `
+
+      <div class="truck-head">
+
+
+        <div>
+
+
+          <div class="license">
+
+          🚚
+          ${escapeHtml(
+            first.license ||
+            'ไม่ระบุทะเบียน'
+          )}
+
+          ${
+            mine
+            ?
+            `
+            <span class="my-badge">
+            รถของฉัน
+            </span>
+            `
+            :
+            ''
+          }
+
+          </div>
+
+
+          <div class="driver-line">
+
+
+            ${avatar}
+
+
+            <div class="driver-meta">
+
+              <div class="driver-name-text">
+
+              ${escapeHtml(
+                first.driver ||
+                '-'
+              )}
+
               </div>
 
-              ${headingExtras}
+
+              <div class="driver-date">
+
+              📅
+              ${escapeHtml(
+                first.date ||
+                '-'
+              )}
+
+              </div>
+
             </div>
 
-            <div class="customer-code">
-              ${escapeHtml(row.customerCode || "")}
-              ${
-                row.note
-                  ? " · " + escapeHtml(row.note)
-                  : ""
-              }
-            </div>
+
           </div>
+
+
         </div>
 
-        <div class="customer-right">
-          <span class="badge ${status}">
-            ${label}
-          </span>
 
-          ${time}
+        <div>
 
-          <div class="actions">
-            ${actions}
-            ${permission}
+          <div class="trip-badge">
+
+          เที่ยวที่
+          ${escapeHtml(
+            first.trip ||
+            '-'
+          )}
+
           </div>
+
+          ${
+            tripAmount > 0
+            ?
+            `<div class="trip-total-value">💰 ${formatMoney(tripAmount)} บาท</div>`
+            :
+            ''
+          }
+
         </div>
+
 
       </div>
-    </div>
+
+
+      <div class="progress-wrap">
+
+
+        <div class="progress-label">
+
+          <span>
+
+          ส่งแล้ว
+          ${done}
+          /
+          ${rows.length}
+          จุด
+
+          </span>
+
+
+          <span>
+
+          ${percent}%
+
+          </span>
+
+        </div>
+
+
+        <div class="progress">
+
+          <div
+            class="progress-bar"
+            style="
+              width:
+              ${percent}%
+            "
+          >
+          </div>
+
+        </div>
+
+
+      </div>
+
+
+      <div class="customer-list">
+
+      ${
+        rows
+          .map(
+            renderCustomerRow
+          )
+          .join('')
+      }
+
+      </div>
+
+      `;
+
+
+    container.appendChild(
+      card
+    );
+
+  }
+);
+
+}
+
+function renderCustomerRow(
+  row
+) {
+
+
+const status =
+  getStatus(
+    row
+  );
+
+
+const mine =
+  isMyTruck(
+    row
+  );
+
+
+const canUpdate =
+  Boolean(
+    driverToken &&
+    mine
+  );
+
+
+const label = {
+
+  done:
+    '✅ จัดส่งสำเร็จ',
+
+  shipping:
+    '🚚 กำลังจัดส่ง',
+
+  late:
+    '⚠️ งานค้าง',
+
+  pending:
+    'รอจัดส่ง'
+
+}[status];
+
+
+
+/* MAP */
+
+let fixedMap =
+  '';
+
+
+if (
+  row.mapLink
+) {
+
+
+fixedMap =
+  `
+
+  <div class="fixed-map-area">
+
+    <button
+      class="map-btn-fixed"
+      onclick="
+        openMap(
+          '${escapeJs(
+            row.mapLink
+          )}'
+        )
+      "
+    >
+
+    📍 แผนที่
+
+    </button>
+
+  </div>
+
   `;
+
+}
+
+
+
+/* MOVING */
+
+let moving =
+  '';
+
+
+if (
+  status ===
+  'shipping'
+) {
+
+
+moving =
+  `
+
+  <div class="delivery-motion-area">
+
+    <div class="moving-delivery-status">
+
+      <span class="moving-truck-icon">
+      🚚
+      </span>
+
+      <span class="moving-shipping-text">
+      กำลังจัดส่ง
+      </span>
+
+    </div>
+
+  </div>
+
+  `;
+
+}
+
+
+
+let headingExtras = `${fixedMap}`;
+
+let shippingLane =
+  status === 'shipping'
+  ? `
+    <div class="shipping-lane-fixed">
+      ${moving}
+    </div>
+    `
+  : '';
+
+
+/* UPDATE */
+
+let actions =
+  '';
+
+
+if (
+  canUpdate
+) {
+
+
+if (
+  status ===
+    'pending'
+  ||
+  status ===
+    'late'
+) {
+
+
+actions =
+  `
+
+  <button
+    class="
+      action-btn
+      start-btn
+    "
+    onclick="
+      updateStatus(
+        ${row.rowNumber},
+        'กำลังจัดส่ง'
+      )
+    "
+  >
+
+  🚚 เริ่มจัดส่ง
+
+  </button>
+
+  `;
+
+}
+
+
+else if (
+  status ===
+  'shipping'
+) {
+
+
+actions =
+  `
+
+  <button
+    class="
+      action-btn
+      complete-btn
+    "
+    onclick="
+      updateStatus(
+        ${row.rowNumber},
+        'จัดส่งแล้ว'
+      )
+    "
+  >
+
+  ✅ จัดส่งสำเร็จ
+
+  </button>
+
+  `;
+
+}
+
+}
+
+
+
+let permission =
+  '';
+
+
+if (
+  !driverToken &&
+  status !==
+  'done'
+) {
+
+
+permission =
+  `
+
+  <span class="no-permission">
+
+  🔒 Login เพื่อ Update
+
+  </span>
+
+  `;
+
+}
+
+
+
+/* TIME */
+
+let time =
+  '';
+
+
+if (
+  row.deliveryTime &&
+  (
+    status ===
+      'done'
+    ||
+    status ===
+      'shipping'
+  )
+) {
+
+
+time =
+  `
+
+  <div class="${
+    status ===
+    'done'
+    ?
+    'complete-time'
+    :
+    'delivery-time'
+  }">
+
+  ${escapeHtml(
+    row.deliveryTime
+  )}
+
+  </div>
+
+  `;
+
+}
+
+
+
+return `
+
+<div
+  class="
+    customer-row
+    ${
+      status ===
+      'shipping'
+      ?
+      'current-delivery'
+      :
+      ''
+    }
+  "
+>
+
+
+<div class="customer-top ${status === 'shipping' ? 'shipping-layout' : ''}">
+
+
+<div class="customer-main">
+
+
+<span
+  class="
+    status-dot
+    ${status}
+  "
+>
+</span>
+
+
+<div
+  style="
+    width:100%;
+    min-width:0;
+  "
+>
+
+
+<div class="customer-heading-line">
+
+  <div
+    class="customer-name ${customerNameSizeClass(row.customer)}"
+    title="${escapeAttr(row.customer || '-')}"
+  >
+  ${escapeHtml(
+    row.customer ||
+    '-'
+  )}
+  </div>
+
+  ${headingExtras}
+
+</div>
+
+<div class="customer-code">
+
+${escapeHtml(
+  row.customerCode ||
+  ''
+)}
+
+${
+  getBillAmount(row) > 0
+  ?
+  `<span class="bill-inline">💰 ${formatMoney(getBillAmount(row))} บาท</span>`
+  :
+  ''
+}
+
+${
+  row.note
+  ?
+  ' · ' +
+  escapeHtml(
+    row.note
+  )
+  :
+  ''
+}
+
+</div>
+
+
+</div>
+
+
+</div>
+
+${shippingLane}
+
+<div class="customer-right">
+
+
+<span
+  class="
+    badge
+    ${status}
+  "
+>
+
+${label}
+
+</span>
+
+
+${time}
+
+
+<div class="actions">
+
+${actions}
+
+${permission}
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+`;
+
 }
 
 /* ---------------- STATS ---------------- */
 
-function updateStats(rows) {
-  const total = rows.length;
-  const shipping = rows.filter(r => getStatus(r) === "shipping").length;
-  const done = rows.filter(r => getStatus(r) === "done").length;
-  const late = rows.filter(r => getStatus(r) === "late").length;
-  const pending = rows.filter(r => getStatus(r) === "pending").length;
+function updateStats(
+  rows
+) {
 
-  document.getElementById("statTotal").textContent = total;
-  document.getElementById("statShipping").textContent = shipping;
-  document.getElementById("statDone").textContent = done;
-  document.getElementById("statLate").textContent = late;
-  document.getElementById("statPending").textContent = pending;
+
+const total =
+  rows.length;
+
+
+const shipping =
+  rows.filter(
+    row =>
+      getStatus(row) ===
+      'shipping'
+  )
+  .length;
+
+
+const done =
+  rows.filter(
+    row =>
+      getStatus(row) ===
+      'done'
+  )
+  .length;
+
+
+const late =
+  rows.filter(
+    row =>
+      getStatus(row) ===
+      'late'
+  )
+  .length;
+
+
+const pending =
+  rows.filter(
+    row =>
+      getStatus(row) ===
+      'pending'
+  )
+  .length;
+
+
+const totalAmount =
+  rows.reduce(
+    (sum, row) =>
+      sum + getBillAmount(row),
+    0
+  );
+
+
+document
+  .getElementById(
+    'statTotal'
+  )
+  .textContent =
+    total;
+
+
+document
+  .getElementById(
+    'statShipping'
+  )
+  .textContent =
+    shipping;
+
+
+document
+  .getElementById(
+    'statDone'
+  )
+  .textContent =
+    done;
+
+
+document
+  .getElementById(
+    'statLate'
+  )
+  .textContent =
+    late;
+
+
+document
+  .getElementById(
+    'statPending'
+  )
+  .textContent =
+    pending;
+
+
+document
+  .getElementById(
+    'statAmount'
+  )
+  .textContent =
+    formatMoney(totalAmount) +
+    ' บาท';
+
+}
+
+function getBillAmount(row) {
+
+  const direct = Number(
+    row && row.billAmount
+  );
+
+  if (Number.isFinite(direct)) {
+    return direct;
+  }
+
+  const text = String(
+    row && row.billValue || ''
+  )
+  .replace(/,/g, '')
+  .replace(/[^0-9.\-]/g, '');
+
+  const value = Number(text);
+
+  return Number.isFinite(value)
+    ? value
+    : 0;
+}
+
+function formatMoney(value) {
+
+  return Number(value || 0)
+    .toLocaleString(
+      'th-TH',
+      {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }
+    );
 }
 
 /* ---------------- UPDATE ---------------- */
@@ -5411,7 +6532,5 @@ setInterval(() => {
 }, 15000);
 </script>
 
-
 </body>
-
 </html>
