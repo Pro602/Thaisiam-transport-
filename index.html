@@ -12,7 +12,7 @@
   content="width=device-width, initial-scale=1"
 >
 
-<title>Delivery Tracking by weera v.2026</title>
+<title>Delivery Tracking by weera v.2026 · Management Report</title>
 <link rel="manifest" href="/Thaisiam-transport-/manifest.json">
 <link rel="icon" href="favicon.ico?v=3">
 
@@ -4341,6 +4341,445 @@ body {
   }
 }
 
+/* =========================================================
+   MANAGEMENT REPORT v1.0
+========================================================= */
+
+.report-btn {
+  border: 0;
+  border-radius: 9px;
+  background: #5b3fb4;
+  color: #fff;
+  padding: 10px 13px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.report-btn:hover {
+  filter: brightness(.97);
+}
+
+.report-modal-card {
+  max-width: 560px;
+}
+
+.report-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.report-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.report-field.full {
+  grid-column: 1 / -1;
+}
+
+.report-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #334155;
+}
+
+.report-input,
+.report-select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #cbd6e4;
+  border-radius: 9px;
+  padding: 9px 10px;
+  background: #fff;
+  font-size: 13px;
+  outline: none;
+}
+
+.report-input:focus,
+.report-select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+}
+
+.report-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.report-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  padding: 9px 10px;
+  background: #f8fafc;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.report-check input {
+  transform: scale(1.08);
+}
+
+.report-note {
+  margin-top: 12px;
+  padding: 10px 11px;
+  border-radius: 10px;
+  background: #f5f3ff;
+  color: #5b3fb4;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.report-generate-btn {
+  flex: 2;
+  border: 0;
+  border-radius: 9px;
+  padding: 11px;
+  cursor: pointer;
+  background: #5b3fb4;
+  color: white;
+  font-weight: 800;
+}
+
+.report-progress {
+  display: none;
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 9px;
+  background: #eff6ff;
+  color: #24518a;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.report-progress.show {
+  display: block;
+}
+
+@media (max-width:650px) {
+
+  .report-btn {
+    min-height: 42px;
+    font-size: 13px;
+    padding: 10px 11px;
+  }
+
+  .report-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-field.full {
+    grid-column: auto;
+  }
+
+  .report-sections {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+
+/* =========================================================
+   MANAGEMENT REPORT PREVIEW v1.1
+========================================================= */
+
+.report-modal-card {
+  max-width: 980px;
+  width: min(980px, calc(100vw - 32px));
+}
+
+.report-preview {
+  display: none;
+  margin-top: 14px;
+  border: 1px solid #dbe4ef;
+  border-radius: 14px;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.report-preview.show {
+  display: block;
+}
+
+.report-preview-head {
+  padding: 12px 14px;
+  background: linear-gradient(135deg,#173f70,#2464a5);
+  color: #fff;
+}
+
+.report-preview-title {
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.report-preview-meta {
+  margin-top: 3px;
+  font-size: 11px;
+  opacity: .9;
+}
+
+.report-preview-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 10px;
+  overflow-x: auto;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.report-preview-tab {
+  border: 1px solid #dbe4ef;
+  background: #f8fafc;
+  color: #475569;
+  border-radius: 9px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.report-preview-tab.active {
+  background: #173f70;
+  border-color: #173f70;
+  color: #fff;
+}
+
+.report-preview-body {
+  max-height: 430px;
+  overflow: auto;
+  padding: 14px;
+}
+
+.preview-company {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 12px;
+}
+
+.preview-company-logo {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.preview-company-name {
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 900;
+  color: #173f70;
+}
+
+.preview-company-sub {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.preview-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.preview-kpi {
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  min-width: 0;
+}
+
+.preview-kpi-label {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.preview-kpi-value {
+  margin-top: 5px;
+  color: #173f70;
+  font-size: 21px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.preview-table-wrap {
+  overflow: auto;
+  border: 1px solid #dbe4ef;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.preview-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.preview-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #2464a5;
+  color: #fff;
+  padding: 9px 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.preview-table td {
+  padding: 8px;
+  border-bottom: 1px solid #e8edf3;
+  vertical-align: middle;
+}
+
+.preview-table tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+.preview-empty {
+  padding: 28px 15px;
+  text-align: center;
+  color: #64748b;
+}
+
+.report-preview-btn {
+  flex: 1.3;
+  border: 0;
+  border-radius: 9px;
+  padding: 11px;
+  cursor: pointer;
+  background: #2464a5;
+  color: #fff;
+  font-weight: 800;
+}
+
+.report-export-btn {
+  flex: 1.7;
+  border: 0;
+  border-radius: 9px;
+  padding: 11px;
+  cursor: pointer;
+  background: #5b3fb4;
+  color: #fff;
+  font-weight: 800;
+}
+
+.report-export-btn:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+@media (max-width:700px) {
+  .report-modal-card {
+    width: calc(100vw - 18px);
+  }
+
+  .preview-kpi-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+
+  .preview-company-name {
+    font-size: 15px;
+  }
+
+  .report-preview-body {
+    max-height: 390px;
+    padding: 10px;
+  }
+
+  .modal-actions {
+    flex-wrap: wrap;
+  }
+
+  .modal-actions > button {
+    min-width: 130px;
+  }
+}
+
+
+
+/* =========================================================
+   MANAGEMENT REPORT v1.2 - STICKY ACTION BAR
+   ปุ่ม ยกเลิก / Preview / Export อยู่ด้านล่างตลอดเวลา
+========================================================= */
+
+#managementReportModal .report-modal-card{
+  max-height: calc(100vh - 24px);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+#managementReportModal .modal-head{
+  flex:0 0 auto;
+}
+
+#managementReportModal .modal-body{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  padding-bottom:0;
+}
+
+#managementReportModal .report-preview{
+  min-height:0;
+}
+
+#managementReportModal .report-preview-body{
+  max-height: min(430px, 42vh);
+  overflow:auto;
+}
+
+#managementReportModal .modal-actions{
+  position:sticky;
+  bottom:0;
+  z-index:40;
+  background:#ffffff;
+  border-top:1px solid #dbe4ef;
+  box-shadow:0 -8px 18px rgba(15,23,42,.10);
+  margin-left:-1px;
+  margin-right:-1px;
+  margin-bottom:-1px;
+  padding:12px 0 2px;
+}
+
+@media (max-width:700px){
+
+  #managementReportModal .report-modal-card{
+    max-height: calc(100vh - 10px);
+  }
+
+  #managementReportModal .report-preview-body{
+    max-height: 38vh;
+  }
+
+  #managementReportModal .modal-actions{
+    gap:7px;
+    padding-top:10px;
+  }
+
+}
+
 </style>
 
 </head>
@@ -4838,6 +5277,13 @@ ONLINE ·
 🔄 Refresh
 </button>
 
+<button
+  class="report-btn"
+  onclick="openManagementReport()"
+>
+📊 รายงานผู้บริหาร
+</button>
+
 
 </section>
 
@@ -5022,6 +5468,224 @@ ONLINE ·
 
 
 <!-- ======================================================
+     MANAGEMENT REPORT MODAL
+====================================================== -->
+
+<div
+  id="managementReportModal"
+  class="modal"
+>
+
+<div class="modal-card report-modal-card">
+
+<div class="modal-head">
+
+<div class="modal-icon">
+📊
+</div>
+
+<div class="modal-title">
+Management Report
+</div>
+
+<div class="modal-sub">
+สร้างรายงาน Excel สำหรับนำเสนอฝ่ายบริหาร
+</div>
+
+</div>
+
+<div class="modal-body">
+
+<div class="report-form-grid">
+
+<div class="report-field">
+
+<label
+  class="report-label"
+  for="reportStartDate"
+>
+วันที่เริ่มต้น
+</label>
+
+<input
+  id="reportStartDate"
+  type="date"
+  class="report-input"
+>
+
+</div>
+
+<div class="report-field">
+
+<label
+  class="report-label"
+  for="reportEndDate"
+>
+วันที่สิ้นสุด
+</label>
+
+<input
+  id="reportEndDate"
+  type="date"
+  class="report-input"
+>
+
+</div>
+
+<div class="report-field full">
+
+<label
+  class="report-label"
+  for="reportDriver"
+>
+พนักงานขับรถ
+</label>
+
+<select
+  id="reportDriver"
+  class="report-select"
+>
+
+<option value="__ALL__">
+ทั้งหมด
+</option>
+
+</select>
+
+</div>
+
+<div class="report-field full">
+
+<div class="report-label">
+ส่วนที่ต้องการใน Excel
+</div>
+
+<div class="report-sections">
+
+<label class="report-check">
+<input
+  id="reportExecutive"
+  type="checkbox"
+  checked
+>
+Executive Summary
+</label>
+
+<label class="report-check">
+<input
+  id="reportDriverPerformance"
+  type="checkbox"
+  checked
+>
+Driver Performance
+</label>
+
+<label class="report-check">
+<input
+  id="reportDaily"
+  type="checkbox"
+  checked
+>
+Daily Summary
+</label>
+
+<label class="report-check">
+<input
+  id="reportDetail"
+  type="checkbox"
+  checked
+>
+Delivery Detail
+</label>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="report-note">
+Excel จะสรุปข้อมูลเฉพาะช่วงวันที่และพนักงานที่เลือก
+พร้อม KPI ภาพรวม, ผลงานรายคนขับ, สรุปรายวัน และรายละเอียดรายบิล
+</div>
+
+<div
+  id="reportProgress"
+  class="report-progress"
+>
+กำลังสร้าง Management Report...
+</div>
+
+
+
+<div
+  id="reportPreview"
+  class="report-preview"
+>
+
+<div class="report-preview-head">
+
+<div class="report-preview-title">
+Preview รายงานก่อน Export
+</div>
+
+<div
+  id="reportPreviewMeta"
+  class="report-preview-meta"
+>
+</div>
+
+</div>
+
+<div
+  id="reportPreviewTabs"
+  class="report-preview-tabs"
+>
+</div>
+
+<div
+  id="reportPreviewBody"
+  class="report-preview-body"
+>
+</div>
+
+</div>
+
+<div class="modal-actions">
+
+<button
+  class="modal-cancel"
+  onclick="closeManagementReport()"
+>
+ยกเลิก
+</button>
+
+<button
+  class="report-preview-btn"
+  onclick="previewManagementReport()"
+>
+👁 Preview รายงาน
+</button>
+
+<button
+  id="reportExportBtn"
+  class="report-export-btn"
+  onclick="generateManagementReportExcel()"
+  disabled
+>
+📥 Export Excel
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ======================================================
      LOADING
 ====================================================== -->
 
@@ -5043,7 +5707,7 @@ ONLINE ·
 <script>
 /* =========================================================
    THAISIAM DELIVERY CONTROL CENTER
-   GitHub Ready v3.0
+   GitHub Ready v3.4 + Management Report FINAL
    GitHub Pages -> Apps Script API -> Google Sheets
 ========================================================= */
 
@@ -6642,6 +7306,230 @@ loadData(true, false);
 setInterval(() => {
   loadData(false, false);
 }, 15000);
+
+
+/* =========================================================
+   MANAGEMENT REPORT - GITHUB PRODUCTION FINAL
+========================================================= */
+
+const REPORT_COMPANY = {
+  name: 'บริษัท ไทยสยามอิงค์เจ็ท จำกัด',
+  logoUrl: 'https://lh3.googleusercontent.com/d/1rlAx7j8TDQBCnqrBts_mzs75U1U1aYy3'
+};
+
+let managementReportOptionsLoaded = false;
+let managementReportPreviewData = null;
+let managementReportPreviewKey = '';
+let managementReportActiveTab = 'executive';
+
+function openManagementReport() {
+  document.getElementById('managementReportModal').classList.add('show');
+  invalidateManagementReportPreview();
+  if (!managementReportOptionsLoaded) loadManagementReportOptions();
+}
+
+function closeManagementReport() {
+  document.getElementById('managementReportModal').classList.remove('show');
+}
+
+async function loadManagementReportOptions() {
+  const progress = document.getElementById('reportProgress');
+  progress.textContent = 'กำลังโหลดข้อมูลสำหรับรายงาน...';
+  progress.classList.add('show');
+  try {
+    const result = await apiCall({action:'reportOptions'});
+    const select = document.getElementById('reportDriver');
+    select.innerHTML = '<option value="__ALL__">ทั้งหมด</option>';
+    (result.drivers || []).forEach(driver => {
+      const option = document.createElement('option');
+      option.value = driver;
+      option.textContent = driver;
+      select.appendChild(option);
+    });
+    document.getElementById('reportStartDate').value = result.defaultStart || '';
+    document.getElementById('reportEndDate').value = result.defaultEnd || '';
+    managementReportOptionsLoaded = true;
+  } catch (error) {
+    alert('โหลดตัวเลือกรายงานไม่สำเร็จ\n' + (error.message || error));
+  } finally {
+    progress.classList.remove('show');
+  }
+}
+
+function getManagementReportParams() {
+  return {
+    startDate: document.getElementById('reportStartDate').value,
+    endDate: document.getElementById('reportEndDate').value,
+    driver: document.getElementById('reportDriver').value,
+    sections: {
+      executive: document.getElementById('reportExecutive').checked,
+      driver: document.getElementById('reportDriverPerformance').checked,
+      daily: document.getElementById('reportDaily').checked,
+      detail: document.getElementById('reportDetail').checked
+    }
+  };
+}
+
+function managementReportParamKey(params) { return JSON.stringify(params); }
+
+function validateManagementReportParams(params) {
+  if (!params.startDate || !params.endDate) {
+    alert('กรุณาเลือกวันที่เริ่มต้นและวันที่สิ้นสุด'); return false;
+  }
+  if (params.endDate < params.startDate) {
+    alert('วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่มต้น'); return false;
+  }
+  const s=params.sections;
+  if (!s.executive && !s.driver && !s.daily && !s.detail) {
+    alert('กรุณาเลือกอย่างน้อย 1 ส่วนของรายงาน'); return false;
+  }
+  return true;
+}
+
+function invalidateManagementReportPreview() {
+  managementReportPreviewData = null;
+  managementReportPreviewKey = '';
+  const preview=document.getElementById('reportPreview');
+  if(preview) preview.classList.remove('show');
+  const btn=document.getElementById('reportExportBtn');
+  if(btn) btn.disabled=true;
+}
+
+async function previewManagementReport() {
+  const params=getManagementReportParams();
+  if(!validateManagementReportParams(params)) return;
+  const progress=document.getElementById('reportProgress');
+  progress.textContent='กำลังเตรียม Preview รายงาน...';
+  progress.classList.add('show');
+  try {
+    const result=await apiCall({
+      action:'reportPreview',
+      startDate:params.startDate,
+      endDate:params.endDate,
+      driver:params.driver
+    });
+    managementReportPreviewData=result;
+    managementReportPreviewKey=managementReportParamKey(params);
+    const tabs=[];
+    if(params.sections.executive) tabs.push('executive');
+    if(params.sections.driver) tabs.push('driver');
+    if(params.sections.daily) tabs.push('daily');
+    if(params.sections.detail) tabs.push('detail');
+    managementReportActiveTab=tabs[0] || 'executive';
+    renderManagementReportPreview(params);
+    document.getElementById('reportPreview').classList.add('show');
+    document.getElementById('reportExportBtn').disabled=false;
+  } catch(error) {
+    alert('สร้าง Preview ไม่สำเร็จ\n'+(error.message||error));
+  } finally {
+    progress.classList.remove('show');
+  }
+}
+
+function renderManagementReportPreview(params) {
+  const data=managementReportPreviewData; if(!data) return;
+  document.getElementById('reportPreviewMeta').textContent='ช่วงวันที่ '+data.period+' · พนักงานขับรถ: '+data.driver;
+  const tabs=[];
+  if(params.sections.executive) tabs.push(['executive','Executive Summary']);
+  if(params.sections.driver) tabs.push(['driver','Driver Performance']);
+  if(params.sections.daily) tabs.push(['daily','Daily Summary']);
+  if(params.sections.detail) tabs.push(['detail','Delivery Detail']);
+  document.getElementById('reportPreviewTabs').innerHTML=tabs.map(item=>`<button class="report-preview-tab ${managementReportActiveTab===item[0]?'active':''}" onclick="showManagementReportPreviewTab('${item[0]}')">${item[1]}</button>`).join('');
+  showManagementReportPreviewTab(managementReportActiveTab);
+}
+
+function showManagementReportPreviewTab(tab) {
+  managementReportActiveTab=tab;
+  document.querySelectorAll('.report-preview-tab').forEach(button=>{
+    const click=button.getAttribute('onclick')||'';
+    button.classList.toggle('active',click.includes("'"+tab+"'"));
+  });
+  const body=document.getElementById('reportPreviewBody');
+  if(!managementReportPreviewData){body.innerHTML='';return;}
+  if(tab==='executive') body.innerHTML=renderExecutivePreview();
+  else if(tab==='driver') body.innerHTML=renderDriverPreview();
+  else if(tab==='daily') body.innerHTML=renderDailyPreview();
+  else body.innerHTML=renderDetailPreview();
+}
+
+function previewCompanyHeader(title) {
+  return `<div class="preview-company"><img class="preview-company-logo" src="${escapeAttr(REPORT_COMPANY.logoUrl)}" alt="Logo"><div><div class="preview-company-name">${escapeHtml(REPORT_COMPANY.name)}</div><div class="preview-company-sub">${escapeHtml(title)} · ${escapeHtml(managementReportPreviewData.period)} · ${escapeHtml(managementReportPreviewData.driver)}</div></div></div>`;
+}
+
+function renderExecutivePreview() {
+  const e=managementReportPreviewData.executive;
+  const cards=[
+    ['งานทั้งหมด',formatPreviewNumber(e.totalPoints)],['จำนวนเที่ยว',formatPreviewNumber(e.totalTrips)],
+    ['จัดส่งสำเร็จ',formatPreviewNumber(e.done)],['กำลังจัดส่ง',formatPreviewNumber(e.shipping)],
+    ['งานค้างส่ง',formatPreviewNumber(e.late)],['รอจัดส่ง',formatPreviewNumber(e.pending)],
+    ['% ส่งสำเร็จ',formatPreviewPercent(e.completion)],['มูลค่าสินค้ารวม',formatPreviewMoney(e.totalAmount)]
+  ];
+  return `${previewCompanyHeader('Executive Summary')}<div class="preview-kpi-grid">${cards.map(c=>`<div class="preview-kpi"><div class="preview-kpi-label">${c[0]}</div><div class="preview-kpi-value">${c[1]}</div></div>`).join('')}</div>${renderDriverTablePreview(managementReportPreviewData.driverRows,true)}`;
+}
+
+function renderDriverPreview(){return `${previewCompanyHeader('Driver Performance')}${renderDriverTablePreview(managementReportPreviewData.driverRows,false)}`;}
+
+function renderDriverTablePreview(rows,compact){
+  if(!rows||!rows.length) return '<div class="preview-empty">ไม่มีข้อมูล</div>';
+  return `<div class="preview-table-wrap"><table class="preview-table"><thead><tr><th>พนักงานขับรถ</th><th>ทะเบียนรถ</th><th>เที่ยว</th><th>จุดส่ง</th><th>สำเร็จ</th>${compact?'':'<th>กำลังส่ง</th><th>งานค้าง</th><th>รอส่ง</th>'}<th>% สำเร็จ</th><th>มูลค่าสินค้า</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${escapeHtml(r.driver)}</td><td>${escapeHtml(r.licenses)}</td><td style="text-align:center">${formatPreviewNumber(r.trips)}</td><td style="text-align:center">${formatPreviewNumber(r.points)}</td><td style="text-align:center">${formatPreviewNumber(r.done)}</td>${compact?'':`<td style="text-align:center">${formatPreviewNumber(r.shipping)}</td><td style="text-align:center">${formatPreviewNumber(r.late)}</td><td style="text-align:center">${formatPreviewNumber(r.pending)}</td>`}<td style="text-align:center">${formatPreviewPercent(r.completion)}</td><td style="text-align:right">${formatPreviewMoney(r.amount)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderDailyPreview(){
+  const rows=managementReportPreviewData.dailyRows||[];
+  return `${previewCompanyHeader('Daily Summary')}<div class="preview-table-wrap"><table class="preview-table"><thead><tr><th>วันที่</th><th>เที่ยว</th><th>จุดส่ง</th><th>สำเร็จ</th><th>กำลังส่ง</th><th>งานค้าง</th><th>รอส่ง</th><th>% สำเร็จ</th><th>มูลค่าสินค้า</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td style="text-align:center">${formatPreviewNumber(r.trips)}</td><td style="text-align:center">${formatPreviewNumber(r.points)}</td><td style="text-align:center">${formatPreviewNumber(r.done)}</td><td style="text-align:center">${formatPreviewNumber(r.shipping)}</td><td style="text-align:center">${formatPreviewNumber(r.late)}</td><td style="text-align:center">${formatPreviewNumber(r.pending)}</td><td style="text-align:center">${formatPreviewPercent(r.completion)}</td><td style="text-align:right">${formatPreviewMoney(r.amount)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderDetailPreview(){
+  const rows=managementReportPreviewData.detailRows||[];
+  return `${previewCompanyHeader('Delivery Detail')}<div class="preview-table-wrap"><table class="preview-table"><thead><tr><th>วันที่</th><th>พนักงานขับรถ</th><th>ทะเบียน</th><th>เที่ยว</th><th>รหัสลูกค้า</th><th>ชื่อร้าน/ลูกค้า</th><th>สถานะ</th><th>เวลาจัดส่ง</th><th>มูลค่าบิล</th><th>หมายเหตุ</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.driver)}</td><td>${escapeHtml(r.license)}</td><td style="text-align:center">${escapeHtml(r.trip)}</td><td>${escapeHtml(r.customerCode)}</td><td>${escapeHtml(r.customer)}</td><td>${escapeHtml(r.status)}</td><td>${escapeHtml(r.deliveryTime)}</td><td style="text-align:right">${formatPreviewMoney(r.amount)}</td><td>${escapeHtml(r.note)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function formatPreviewNumber(value){return Number(value||0).toLocaleString('th-TH');}
+function formatPreviewMoney(value){return '฿'+Number(value||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function formatPreviewPercent(value){return (Number(value||0)*100).toLocaleString('th-TH',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';}
+
+async function generateManagementReportExcel(){
+  const params=getManagementReportParams();
+  if(!validateManagementReportParams(params)) return;
+  if(!managementReportPreviewData || managementReportPreviewKey!==managementReportParamKey(params)){
+    alert('กรุณากด Preview รายงานล่าสุดก่อน Export Excel');
+    invalidateManagementReportPreview(); return;
+  }
+  const progress=document.getElementById('reportProgress');
+  progress.textContent='กำลังสร้าง Excel สำหรับฝ่ายบริหาร...'; progress.classList.add('show');
+  showLoadingBox();
+  try {
+    const s=params.sections;
+    const result=await apiCall({
+      action:'reportExport',startDate:params.startDate,endDate:params.endDate,driver:params.driver,
+      executive:s.executive,driverSection:s.driver,daily:s.daily,detail:s.detail
+    });
+    downloadBase64File(result.base64,result.mimeType,result.fileName);
+    progress.textContent='Export Excel เรียบร้อย'; progress.classList.add('show');
+    setTimeout(()=>progress.classList.remove('show'),2200);
+  } catch(error){
+    progress.classList.remove('show');
+    alert('สร้าง Management Report ไม่สำเร็จ\n'+(error.message||error));
+  } finally { hideLoadingBox(); }
+}
+
+function downloadBase64File(base64,mimeType,fileName){
+  const chars=atob(base64); const arrays=[]; const size=1024;
+  for(let offset=0;offset<chars.length;offset+=size){
+    const slice=chars.slice(offset,offset+size); const nums=new Array(slice.length);
+    for(let i=0;i<slice.length;i++) nums[i]=slice.charCodeAt(i);
+    arrays.push(new Uint8Array(nums));
+  }
+  const blob=new Blob(arrays,{type:mimeType||'application/octet-stream'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url; a.download=fileName||'Management_Report.xlsx'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+
+document.addEventListener('change',event=>{
+  if(event.target && ['reportStartDate','reportEndDate','reportDriver','reportExecutive','reportDriverPerformance','reportDaily','reportDetail'].includes(event.target.id)) invalidateManagementReportPreview();
+});
+
 </script>
 
 </body>
